@@ -75,3 +75,14 @@ class Config:
 
 # 전역 설정 인스턴스
 config = Config()
+
+
+# 편의 함수
+def get_browser_config() -> dict:
+    """Playwright 브라우저 설정을 반환합니다."""
+    return config.get_browser_config()
+
+
+def get_context_config() -> dict:
+    """Playwright 컨텍스트 설정을 반환합니다."""
+    return config.get_context_config()
