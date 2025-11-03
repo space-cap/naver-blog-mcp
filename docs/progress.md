@@ -487,6 +487,62 @@ server_initialization         : ✅ 통과
 
 ---
 
+## 🔍 이미지 업로드 사전 조사 (2025-01-04) ✅
+
+### 조사 목적
+Day 11-12 이미지 업로드 기능 구현 전, 네이버 블로그의 이미지 업로드가 기술적으로 가능한지 확인
+
+### 조사 결과
+**✅ 이미지 업로드 기술적 구현 가능 확인**
+
+#### 1. iframe 구조 확인
+- ✅ 네이버 블로그 에디터는 `iframe#mainFrame` 내부에 위치
+- ✅ 모든 DOM 조작은 iframe 내부에서 수행해야 함
+- iframe URL: `/PostWriteForm.naver?blogId=070802&...`
+
+#### 2. 이미지 업로드 UI 요소 발견
+- ✅ **이미지 버튼**: `button[data-name='image']`
+  - Classes: `se-image-toolbar-button se-document-toolbar-basic-button`
+  - 툴바에서 "사진" 버튼으로 표시
+- ✅ **파일 Input**: `input[type='file']#hidden-file`
+  - 버튼 클릭 시 동적으로 생성됨
+  - Accept: `.jpg,.jpeg,.gif,.png,.bmp,.heic,.heif,.webp`
+
+#### 3. 지원 이미지 포맷
+- JPG/JPEG, GIF, PNG, BMP
+- HEIC/HEIF (Apple 포맷)
+- WebP
+
+#### 4. 구현 방법 정리
+```python
+# Step 1: iframe 접근
+iframe_element = await page.wait_for_selector("iframe#mainFrame")
+main_frame = await iframe_element.content_frame()
+
+# Step 2: 사진 버튼 클릭
+await main_frame.locator("button[data-name='image']").click()
+
+# Step 3: 파일 업로드
+file_input = main_frame.locator("input[type='file']#hidden-file")
+await file_input.set_input_files("path/to/image.jpg")
+```
+
+#### 5. 추가 조사 필요 사항
+- [ ] 업로드 완료 감지 방법
+- [ ] 이미지 크기/정렬 옵션 설정
+- [ ] 다중 이미지 업로드 방법
+- [ ] 에러 처리 (용량 제한, 포맷 제한)
+
+#### 6. 생성 파일
+- ✅ `tests/test_image_upload_research.py` - 조사용 스크립트
+- ✅ `docs/image-upload-research.md` - 상세 조사 보고서
+- ✅ 스크린샷: `playwright-state/screenshots/upload_dialog.png`
+
+### 결론
+**Day 11-12 이미지 업로드 구현을 진행할 수 있는 충분한 근거 확보** ✅
+
+---
+
 ## 🔄 진행 중인 작업
 
 현재 없음
