@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "naver-blog": {
+      "command": "uv",
+      "args": [
+        "run",
+        "naver-blog-mcp"
+      ],
+      "cwd": "C:\\workdir\\space-cap\\naver-blog-mcp",
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}

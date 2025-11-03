@@ -11,7 +11,11 @@
       "Bash(tree:*)",
       "Bash(git commit:*)",
       "Bash(chcp 65001)",
-      "Bash(PYTHONIOENCODING=utf-8 uv run python:*)"
+      "Bash(PYTHONIOENCODING=utf-8 uv run python:*)",
+      "Bash(mcp dev:*)",
+      "Bash(timeout:*)",
+      "Bash(exit 0)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []
