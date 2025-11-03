@@ -9,16 +9,17 @@ from typing import Optional, Dict, Any
 from playwright.async_api import Page
 
 from ..automation.post_actions import create_blog_post, NaverBlogPostError
+from ..automation.image_upload import upload_images
 from ..utils.retry import retry_on_error
 from ..utils.error_handler import handle_playwright_error
-from ..utils.exceptions import NaverBlogError
+from ..utils.exceptions import NaverBlogError, UploadError
 
 logger = logging.getLogger(__name__)
 
 TOOLS_METADATA = {
     "naver_blog_create_post": {
         "name": "naver_blog_create_post",
-        "description": "네이버 블로그에 새 글을 작성합니다.",
+        "description": "네이버 블로그에 새 글을 작성합니다. 이미지 첨부도 지원합니다.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -38,6 +39,11 @@ TOOLS_METADATA = {
                     "type": "array",
                     "items": {"type": "string"},
                     "description": "태그 목록 (선택)",
+                },
+                "images": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "첨부할 이미지 파일 경로 목록 (선택). 본문 작성 전에 이미지를 먼저 업로드합니다.",
                 },
                 "publish": {
                     "type": "boolean",
@@ -95,6 +101,7 @@ async def handle_create_post(
     content: str,
     category: Optional[str] = None,
     tags: Optional[list[str]] = None,
+    images: Optional[list[str]] = None,
     publish: bool = True,
 ) -> Dict[str, Any]:
     """네이버 블로그에 새 글을 작성합니다.
@@ -105,6 +112,7 @@ async def handle_create_post(
         content: 글 본문 내용
         category: 카테고리 이름 (선택)
         tags: 태그 목록 (선택)
+        images: 첨부할 이미지 파일 경로 목록 (선택)
         publish: 즉시 발행 여부 (기본: True, False면 임시저장)
 
     Returns:
@@ -113,16 +121,41 @@ async def handle_create_post(
             "success": bool,
             "message": str,
             "post_url": str (발행 시),
-            "title": str
+            "title": str,
+            "images_uploaded": int (업로드된 이미지 수)
         }
 
     Raises:
         NaverBlogPostError: 글 작성 실패 시
+        UploadError: 이미지 업로드 실패 시
     """
     try:
         logger.info(f"글 작성 시작: {title}")
+        images_uploaded = 0
 
-        # 기존 자동화 모듈 사용
+        # 1. 이미지 업로드 (본문 작성 전)
+        if images:
+            logger.info(f"이미지 업로드 시작: {len(images)}개")
+            try:
+                upload_result = await upload_images(page, images)
+                images_uploaded = len(upload_result.get("uploaded", []))
+
+                if upload_result.get("failed"):
+                    logger.warning(f"일부 이미지 업로드 실패: {upload_result['failed']}")
+
+                logger.info(f"이미지 업로드 완료: {images_uploaded}/{len(images)}개")
+
+            except UploadError as e:
+                logger.error(f"이미지 업로드 실패: {e}")
+                return {
+                    "success": False,
+                    "message": f"이미지 업로드 실패: {str(e)}",
+                    "post_url": None,
+                    "title": title,
+                    "images_uploaded": 0,
+                }
+
+        # 2. 본문 작성
         result = await create_blog_post(
             page=page,
             title=title,
@@ -132,7 +165,10 @@ async def handle_create_post(
             wait_for_completion=publish,
         )
 
-        logger.info(f"글 작성 완료: {result.get('post_url', 'N/A')}")
+        # 결과에 이미지 정보 추가
+        result["images_uploaded"] = images_uploaded
+
+        logger.info(f"글 작성 완료: {result.get('post_url', 'N/A')} (이미지 {images_uploaded}개)")
         return result
 
     except NaverBlogPostError as e:
@@ -142,6 +178,7 @@ async def handle_create_post(
             "message": f"글 작성 중 오류가 발생했습니다: {str(e)}",
             "post_url": None,
             "title": title,
+            "images_uploaded": images_uploaded,
         }
     except Exception as e:
         # Playwright 에러를 커스텀 에러로 변환
