@@ -619,13 +619,31 @@ await file_input.set_input_files("path/to/image.jpg")
 
 ---
 
-## 📋 다음 단계 (Phase 1 Day 11-14)
+## 📝 Markdown 지원 불가 확인 (2025-01-04)
 
-### 이미지 업로드 및 Markdown 지원
-- [ ] Day 11: Playwright File Upload 구현
-- [ ] Day 12: 이미지 + 텍스트 통합
-- [ ] Day 13: Markdown → HTML 변환
-- [ ] Day 14: Markdown Tool 통합
+### 조사 결과
+네이버 블로그의 Markdown 지원 여부를 확인한 결과, **구현 불가능**함을 확인:
+
+1. **Markdown 직접 지원**: ❌ 네이버 블로그는 Markdown을 지원하지 않음
+2. **HTML 편집 모드**: ❌ 스마트에디터 ONE으로 통합되면서 제거됨
+3. **현재 지원**: WYSIWYG 에디터만 지원
+
+### 결론
+- Day 13-14의 Markdown 지원 기능은 현재 네이버 블로그 구조상 구현 불가능
+- implementation-plan.md의 해당 부분은 실제 기능 파악 없이 작성된 것으로 확인
+- **프로젝트는 Day 12까지 완료하고 종료**
+
+---
+
+## 📋 향후 확장 가능성
+
+현재 구현된 기능으로도 실용적인 MCP 서버가 완성되었습니다. 추가로 구현 가능한 기능:
+
+### 가능한 확장 기능
+- [ ] 글 수정 기능 (edit_post)
+- [ ] 글 목록 조회 (list_posts)
+- [ ] 댓글 관리 (list_comments, delete_comment)
+- [ ] 통계 조회 (view_stats)
 
 ---
 
