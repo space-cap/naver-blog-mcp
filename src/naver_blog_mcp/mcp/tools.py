@@ -9,6 +9,9 @@ from typing import Optional, Dict, Any
 from playwright.async_api import Page
 
 from ..automation.post_actions import create_blog_post, NaverBlogPostError
+from ..utils.retry import retry_on_error
+from ..utils.error_handler import handle_playwright_error
+from ..utils.exceptions import NaverBlogError
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +88,7 @@ def get_tools_list() -> list[dict]:
 # ============================================================================
 
 
+@retry_on_error
 async def handle_create_post(
     page: Page,
     title: str,
@@ -140,10 +144,17 @@ async def handle_create_post(
             "title": title,
         }
     except Exception as e:
-        logger.error(f"예상치 못한 오류: {e}", exc_info=True)
+        # Playwright 에러를 커스텀 에러로 변환
+        custom_error = await handle_playwright_error(e, page, "create_post")
+        logger.error(f"예상치 못한 오류: {custom_error}", exc_info=True)
+
+        # 재시도 가능한 에러면 다시 발생시켜서 tenacity가 재시도하도록
+        if isinstance(custom_error, NaverBlogError):
+            raise custom_error
+
         return {
             "success": False,
-            "message": f"예상치 못한 오류: {str(e)}",
+            "message": f"예상치 못한 오류: {str(custom_error)}",
             "post_url": None,
             "title": title,
         }

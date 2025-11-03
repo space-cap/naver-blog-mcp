@@ -7,15 +7,15 @@
 Playwright 기반 네이버 블로그 MCP 서버 구축 프로젝트
 
 ## 📊 전체 진행률
-**Phase 1 Day 7 완료: 50% (Day 7/14 in Phase 1)**
-**전체 프로젝트: 28% (Day 7/25)**
+**Phase 1 Day 10 완료: 71% (Day 10/14 in Phase 1)**
+**전체 프로젝트: 40% (Day 10/25)**
 
 ```
-Phase 1 (Week 1-2): ███████░░░░░░░ 50%
+Phase 1 (Week 1-2): ██████████░░░░ 71%
 Phase 2 (Week 3):   ░░░░░░░░░░░░░░  0%
 Phase 3 (Week 4):   ░░░░░░░░░░░░░░  0%
 
-전체 프로젝트:     ███████░░░░░░░ 28%
+전체 프로젝트:     ██████████░░░░ 40%
 ```
 
 **Day 4 건너뛰기**: 이미 Day 2-3에서 완료
@@ -409,6 +409,82 @@ server_initialization         : ✅ 통과
   - 실제 사용 예시
   - 문제 해결 방법
 
+### Phase 1 Day 8-10: 에러 처리 및 재시도 로직 완료 (2025-11-03) ✅
+
+#### Day 8: 에러 분류 및 처리
+- ✅ **커스텀 예외 클래스 확장** (`utils/exceptions.py`)
+  - `NaverBlogError` (기본 에러)
+  - `LoginError`, `CaptchaDetectedError`, `InvalidCredentialsError`, `SessionExpiredError`
+  - `PostError`, `ElementNotFoundError`, `NavigationError`, `UploadError`
+  - `NetworkError`, `TimeoutError`, `UIChangedError`
+- ✅ **Playwright 에러 핸들러** (`utils/error_handler.py`)
+  - Playwright 에러를 커스텀 에러로 자동 변환
+  - 에러 타입별 자동 분류 (Timeout, Network, Selector, Navigation)
+  - 에러 발생 시 자동 스크린샷 저장
+  - HTML 페이지 소스 저장 기능
+  - 재시도 가능 여부 자동 판단
+  - 대체 셀렉터 사용 여부 판단
+
+#### Day 9: 재시도 로직
+- ✅ **tenacity 재시도 데코레이터** (`utils/retry.py`)
+  - 지수 백오프 (exponential backoff): 2초 → 4초 → 8초
+  - 최대 3회 재시도
+  - 재시도 가능한 에러만 자동 재시도 (Network, Timeout, Navigation)
+  - 재시도 전/후 자동 로깅
+  - 다양한 설정 프리셋: `retry_on_error`, `retry_quick`, `retry_slow`
+- ✅ **Tool 핸들러에 재시도 통합**
+  - `handle_create_post`에 `@retry_on_error` 데코레이터 적용
+  - Playwright 에러 자동 변환 및 재시도
+
+#### Day 10: 디버깅 도구
+- ✅ **Playwright Trace Manager** (`utils/trace_manager.py`)
+  - 모든 Tool 실행 시 자동 trace 기록
+  - 스크린샷, DOM 스냅샷, 소스 코드 포함
+  - 성공/실패 여부에 따라 파일명 자동 분류
+  - `playwright show-trace` 명령으로 상세 분석 가능
+- ✅ **MCP 서버에 Trace 통합**
+  - Tool 호출 시작 시 자동 trace 시작
+  - Tool 완료/실패 시 자동 trace 저장
+  - `playwright-state/traces/` 디렉토리에 저장
+- ✅ **대체 셀렉터 자동 전환** (`utils/selector_helper.py`)
+  - `find_element_with_alternatives()`: 여러 셀렉터 자동 시도
+  - `click_with_alternatives()`: 대체 셀렉터로 자동 클릭
+  - `fill_with_alternatives()`: 대체 셀렉터로 자동 입력
+  - `wait_for_any_selector()`: 여러 셀렉터 중 하나가 나타날 때까지 대기
+
+#### 테스트 결과
+```
+╔══════════════════════════════════════════════════════════╗
+║                  에러 처리 테스트                        ║
+╚══════════════════════════════════════════════════════════╝
+
+✅ NaverBlogError 테스트 통과
+✅ TimeoutError 테스트 통과
+✅ NetworkError 테스트 통과
+✅ ElementNotFoundError 테스트 통과
+
+✅ NetworkError은 재시도 가능
+✅ TimeoutError은 재시도 가능
+✅ ElementNotFoundError은 재시도 불가능
+
+✅ 재시도 성공: 3회 시도 후 성공
+✅ 최대 재시도 횟수 도달: 3회 시도 후 실패
+
+🎉 모든 에러 처리 테스트 통과!
+```
+
+#### 주요 성과
+- ✅ **안정성 대폭 향상**
+  - 네트워크 에러 자동 재시도
+  - UI 변경 시 대체 셀렉터 자동 전환
+  - 모든 에러 자동 스크린샷 저장
+- ✅ **디버깅 용이성**
+  - Trace 파일로 정확한 에러 시점 분석
+  - 재시도 로그로 문제 추적
+- ✅ **프로덕션 준비**
+  - 일시적 네트워크 문제 자동 복구
+  - UI 변경에 강인한 구조
+
 ---
 
 ## 🔄 진행 중인 작업
@@ -417,14 +493,13 @@ server_initialization         : ✅ 통과
 
 ---
 
-## 📋 다음 단계 (Phase 1 Day 8-10)
+## 📋 다음 단계 (Phase 1 Day 11-14)
 
-### 에러 처리 및 재시도 로직
-- [ ] Tool 실행 에러 핸들링 개선
-- [ ] 네트워크 에러 재시도 (tenacity)
-- [ ] CAPTCHA 감지 및 처리
-- [ ] 타임아웃 설정 최적화
-- [ ] 에러 로깅 강화
+### 이미지 업로드 및 Markdown 지원
+- [ ] Day 11: Playwright File Upload 구현
+- [ ] Day 12: 이미지 + 텍스트 통합
+- [ ] Day 13: Markdown → HTML 변환
+- [ ] Day 14: Markdown Tool 통합
 
 ---
 
@@ -440,7 +515,7 @@ server_initialization         : ✅ 통과
 - [x] Day 7: 통합 테스트 ✅
 
 ### Week 2 (Day 8-14)
-- [ ] Day 8-10: 에러 처리 및 재시도 로직
+- [x] Day 8-10: 에러 처리 및 재시도 로직 ✅
 - [ ] Day 11-12: 이미지 업로드
 - [ ] Day 13-14: Markdown 지원
 

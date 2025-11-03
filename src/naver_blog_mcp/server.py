@@ -21,6 +21,7 @@ from .mcp.tools import (
     handle_delete_post,
     handle_list_categories,
 )
+from .utils.trace_manager import trace_manager
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -60,6 +61,10 @@ class NaverBlogMCPServer:
             logger.info(f"Tool called: {name} with arguments: {arguments}")
 
             try:
+                # Trace 시작
+                if self.context:
+                    await trace_manager.start_trace(self.context, name=name)
+
                 # 페이지 가져오기
                 page = await self.get_page()
 
@@ -87,6 +92,10 @@ class NaverBlogMCPServer:
                         }
                     ]
 
+                # Trace 저장 (성공)
+                if self.context:
+                    await trace_manager.stop_trace(self.context, success=True)
+
                 # 결과를 MCP 형식으로 변환
                 import json
 
@@ -99,6 +108,11 @@ class NaverBlogMCPServer:
 
             except Exception as e:
                 logger.error(f"Tool execution error: {e}", exc_info=True)
+
+                # Trace 저장 (실패)
+                if self.context:
+                    await trace_manager.stop_trace(self.context, success=False)
+
                 return [
                     {
                         "type": "text",
