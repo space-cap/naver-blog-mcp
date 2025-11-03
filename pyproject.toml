@@ -1,9 +1,45 @@
 [project]
 name = "naver-blog-mcp"
 version = "0.1.0"
-description = "Add your description here"
+description = "Naver Blog MCP server using Playwright automation"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "mcp[cli]>=1.20.0",
+    "playwright>=1.40.0",
+    "pydantic>=2.5.0",
+    "python-dotenv>=1.0.0",
+    "tenacity>=8.2.0",
+    "aiofiles>=23.0.0",
+    "markdown>=3.5.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-playwright>=0.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+]
+
+[project.scripts]
+naver-blog-mcp = "naver_blog_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 88
+target-version = ['py313']
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
