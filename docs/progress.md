@@ -7,16 +7,18 @@
 Playwright 기반 네이버 블로그 MCP 서버 구축 프로젝트
 
 ## 📊 전체 진행률
-**Phase 1 Day 3 완료: 21% (Day 3/14 in Phase 1)**
-**전체 프로젝트: 12% (Day 3/25)**
+**Phase 1 Day 5 완료: 36% (Day 5/14 in Phase 1)**
+**전체 프로젝트: 20% (Day 5/25)**
 
 ```
-Phase 1 (Week 1-2): ████░░░░░░░░░░ 21%
+Phase 1 (Week 1-2): █████░░░░░░░░░ 36%
 Phase 2 (Week 3):   ░░░░░░░░░░░░░░  0%
 Phase 3 (Week 4):   ░░░░░░░░░░░░░░  0%
 
-전체 프로젝트:     ███░░░░░░░░░░░ 12%
+전체 프로젝트:     █████░░░░░░░░░ 20%
 ```
+
+**Day 4 건너뛰기**: 이미 Day 2-3에서 완료
 
 ---
 
@@ -190,6 +192,60 @@ naver-blog-mcp/
 - **발행 성공률**: 100% (2/2 테스트)
 - **에러 복구**: 자동 재시도 및 fallback 동작
 
+### Phase 1 Day 4: DOM 셀렉터 정리 (건너뜀) ⏭️
+
+**건너뛴 이유:**
+- Day 2-3 작업 중 이미 셀렉터 정리 완료
+- `selectors.py`에 모든 셀렉터 중앙 관리 완료
+- 대체 셀렉터 리스트 형태로 구현 완료
+- 실전 테스트로 셀렉터 검증 완료
+
+### Phase 1 Day 5: MCP 서버 구조 설정 완료 (2025-11-03) ✅
+
+#### 1. MCP 서버 기본 구조 구현
+- ✅ `src/naver_blog_mcp/server.py` 생성
+- ✅ **NaverBlogMCPServer 클래스**
+  - MCP Server 인스턴스 관리
+  - Playwright 브라우저 생명주기 관리
+  - 세션 관리자 통합
+  - 리소스 자동 정리
+- ✅ **브라우저 관리**
+  - `initialize()` - 브라우저 및 세션 초기화
+  - `cleanup()` - 리소스 정리
+  - `get_page()` - 페이지 인스턴스 제공
+  - `run()` - MCP 서버 실행 (stdio)
+
+#### 2. Tool 메타데이터 정의
+- ✅ `src/naver_blog_mcp/mcp/tools.py` 생성
+- ✅ **Tool 스키마 정의**
+  - `naver_blog_create_post` - 글 작성 Tool
+  - `naver_blog_delete_post` - 글 삭제 Tool
+  - `naver_blog_list_categories` - 카테고리 목록 Tool
+- ✅ JSON Schema 기반 입력 검증
+- ✅ `get_tools_list()` 헬퍼 함수
+
+#### 3. 설정 개선
+- ✅ `config.py` 편의 함수 추가
+  - `get_browser_config()` - 브라우저 설정
+  - `get_context_config()` - 컨텍스트 설정
+
+#### 4. 테스트 작성
+- ✅ `tests/test_server.py` 생성
+- ✅ **서버 초기화 테스트**
+  - 서버 인스턴스 생성 확인
+  - 브라우저 및 세션 초기화 확인
+  - 페이지 생성 및 네비게이션 확인
+  - 리소스 정리 확인
+
+#### 5. 테스트 결과
+```
+✅ 서버 인스턴스 생성 완료
+✅ 브라우저 및 세션 초기화 완료
+✅ 페이지 생성 완료
+✅ 네이버 블로그 접속 완료
+✅ 리소스 정리 완료
+```
+
 ---
 
 ## 🔄 진행 중인 작업
@@ -198,13 +254,15 @@ naver-blog-mcp/
 
 ---
 
-## 📋 다음 단계 (Phase 1 Day 4)
+## 📋 다음 단계 (Phase 1 Day 6)
 
-### DOM 셀렉터 정리 및 안정화
-- [ ] 실제 네이버 블로그에서 셀렉터 검증
-- [ ] 추가 대체 셀렉터 정의
-- [ ] 셀렉터 문서화
-- [ ] 에지 케이스 처리
+### 핵심 Tool 구현
+- [ ] `naver_blog_create_post` Tool 핸들러 작성
+- [ ] `naver_blog_delete_post` Tool 핸들러 작성
+- [ ] `naver_blog_list_categories` Tool 핸들러 작성
+- [ ] MCP Tool 데코레이터 연동
+- [ ] 기존 자동화 모듈(`post_actions.py`) 통합
+- [ ] Tool 실행 테스트
 
 ---
 
@@ -214,8 +272,8 @@ naver-blog-mcp/
 - [x] Day 1: 프로젝트 초기 설정 ✅
 - [x] Day 2: 네이버 로그인 자동화 ✅
 - [x] Day 3: 글쓰기 페이지 자동화 ✅
-- [ ] Day 4: DOM 셀렉터 정리
-- [ ] Day 5: MCP 서버 구조 설정
+- [x] Day 4: DOM 셀렉터 정리 ✅ (Day 2-3에 포함)
+- [x] Day 5: MCP 서버 구조 설정 ✅
 - [ ] Day 6: 핵심 Tool 구현
 - [ ] Day 7: 통합 테스트
 
