@@ -1,0 +1,67 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Playwright 관련
+playwright-state/
+*.zip
+traces/
+screenshots/
+videos/
+debug/
+test-results/
+
+# 환경 변수 및 설정
+.env
+.env.local
+.env.*.local
+
+# 민감한 정보
+auth.json
+*.session
+credentials.json
+
+# IDE 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 로그 파일
+*.log
+logs/
+
+# 테스트 커버리지
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ruff
+.ruff_cache/
+
+# 임시 파일
+*.tmp
+*.temp
+temp/
+tmp/
