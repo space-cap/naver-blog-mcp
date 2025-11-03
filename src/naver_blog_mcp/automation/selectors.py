@@ -28,9 +28,19 @@ class NaverSelectors:
 
     # 글쓰기 페이지
     POST_WRITE = {
-        "title_input": ["input[placeholder*='제목']", "#title", ".se-title-input"],
+        "title_input": [
+            "div[contenteditable='true'][data-placeholder='제목']",  # 스마트에디터 ONE
+            "div[contenteditable='true']:has-text('제목')",
+            "input[placeholder*='제목']",
+            "#title",
+            ".se-title-input",
+        ],
         "content_frame": ["iframe.se-iframe", "iframe#mainFrame"],
-        "content_body": [".se-component-content", ".se-text-paragraph"],
+        "content_body": [
+            "div[contenteditable='true']",  # 일반 contenteditable
+            ".se-component-content",
+            ".se-text-paragraph",
+        ],
         "category_select": [".blog2_series", "select[name='category']"],
         "tag_input": ["input[placeholder*='태그']", ".tag_input"],
         "publish_btn": [
@@ -83,3 +93,11 @@ class NaverSelectors:
 LOGIN_ID_INPUT = NaverSelectors.LOGIN["id_input"]
 LOGIN_PW_INPUT = NaverSelectors.LOGIN["pw_input"]
 LOGIN_BTN = NaverSelectors.LOGIN["login_btn"]
+
+# 글쓰기 관련 상수
+POST_WRITE_TITLE = NaverSelectors.POST_WRITE["title_input"]
+POST_WRITE_CONTENT_FRAME = NaverSelectors.POST_WRITE["content_frame"]
+POST_WRITE_CONTENT_BODY = NaverSelectors.POST_WRITE["content_body"]
+POST_WRITE_PUBLISH_BTN = NaverSelectors.POST_WRITE["publish_btn"]
+POST_WRITE_CATEGORY_BTN = NaverSelectors.POST_WRITE["category_select"]
+POST_WRITE_TAG_INPUT = NaverSelectors.POST_WRITE["tag_input"]

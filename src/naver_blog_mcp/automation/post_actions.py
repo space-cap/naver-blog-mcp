@@ -37,36 +37,84 @@ async def navigate_to_post_write_page(
         NaverBlogPostError: 페이지 이동 실패 시
     """
     try:
+        # 방법 1: blog_id가 주어진 경우
         if blog_id:
-            # 특정 블로그의 글쓰기 페이지로 이동
             url = f"https://blog.naver.com/{blog_id}/postwrite"
         else:
-            # 블로그 메인에서 글쓰기 버튼 클릭 방식
-            url = "https://blog.naver.com/postwrite"
+            # 방법 2: 블로그 메인에서 글쓰기 버튼 찾아서 클릭
+            # 먼저 블로그 메인으로 이동
+            await page.goto("https://blog.naver.com", wait_until="load", timeout=timeout)
+            await asyncio.sleep(2)
 
-        await page.goto(url, wait_until="networkidle", timeout=timeout)
-        await asyncio.sleep(2)  # 에디터 로딩 대기
+            # 글쓰기 버튼 찾기 (여러 셀렉터 시도)
+            write_btn_selectors = [
+                "a[href*='postwrite']",
+                "a:has-text('글쓰기')",
+                "button:has-text('글쓰기')",
+            ]
 
-        # 글쓰기 페이지인지 확인 (제목 입력란 존재 여부)
+            write_btn_found = False
+            for selector in write_btn_selectors:
+                count = await page.locator(selector).count()
+                if count > 0:
+                    # href 가져오기
+                    element = page.locator(selector).first
+                    href = await element.get_attribute("href")
+                    if href:
+                        # 절대 URL로 변환
+                        if href.startswith("/"):
+                            url = f"https://blog.naver.com{href}"
+                        elif href.startswith("http"):
+                            url = href
+                        else:
+                            url = f"https://blog.naver.com/{href}"
+                        write_btn_found = True
+                        print(f"   글쓰기 버튼 발견: {url}")
+                        break
+
+            if not write_btn_found:
+                # 기본 URL 사용
+                url = "https://blog.naver.com/postwrite"
+                print(f"   글쓰기 버튼을 찾지 못했습니다. 기본 URL 사용: {url}")
+
+        await page.goto(url, wait_until="load", timeout=timeout)
+        await asyncio.sleep(3)  # 에디터 로딩 충분히 대기
+
+        # 글쓰기 페이지인지 확인
+        current_url = page.url
+        print(f"   현재 URL: {current_url}")
+
+        # URL에 postwrite, PostWriteForm, Redirect=Write가 포함되어 있으면 성공으로 간주
+        if ("postwrite" in current_url.lower() or
+            "PostWriteForm" in current_url or
+            "Redirect=Write" in current_url):
+            print(f"✅ 글쓰기 페이지로 이동: {current_url}")
+            return
+
+        # 제목 입력란 확인 (추가 검증)
         title_input_exists = False
         if isinstance(POST_WRITE_TITLE, list):
             for selector in POST_WRITE_TITLE:
                 count = await page.locator(selector).count()
                 if count > 0:
                     title_input_exists = True
+                    print(f"   제목 입력란 발견: {selector}")
                     break
         else:
             count = await page.locator(POST_WRITE_TITLE).count()
             title_input_exists = count > 0
 
-        if not title_input_exists:
-            raise NaverBlogPostError("글쓰기 페이지 로딩에 실패했습니다.")
+        if title_input_exists:
+            print(f"✅ 글쓰기 페이지로 이동: {url}")
+            return
 
-        print(f"✅ 글쓰기 페이지로 이동: {url}")
+        raise NaverBlogPostError(f"글쓰기 페이지 로딩에 실패했습니다. 현재 URL: {current_url}")
 
     except PlaywrightTimeout as e:
         raise NaverBlogPostError(f"글쓰기 페이지 이동 시간 초과: {str(e)}")
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise NaverBlogPostError(f"글쓰기 페이지 이동 중 오류: {str(e)}")
 
 
