@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:chongmoa.com)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\ndocs: Playwright 기반 네이버 블로그 MCP 서버 아키텍처 및 구현 계획\n\n- 네이버 블로그 API 현황 조사 (2020년 공식 API 종료 확인)\n- Playwright 웹 자동화 방식으로 전환 (Selenium 대비 30% 성능 개선)\n- 상세 아키텍처 설계서 작성 (docs/architecture.md)\n  - Selenium vs Playwright 비교 분석\n  - MCP 서버 3-레이어 아키텍처 설계\n  - 네이버 블로그 UI 구조 및 DOM 셀렉터 정의\n  - 세션 관리 및 자동화 감지 우회 방안\n- 4주 구현 계획서 작성 (docs/implementation-plan.md)\n  - Phase 1: Playwright 기본 자동화 + 핵심 기능\n  - Phase 2: 이미지 업로드, Markdown 지원, Stealth 모드\n  - Phase 3: 테스트, 문서화, 배포\n- CLAUDE.md 추가 (한글 응답 설정 및 프로젝트 가이드)\n- .gitignore 확장 (Playwright 관련 파일, 민감 정보 보호)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv run:*)",
+      "Bash(tree:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

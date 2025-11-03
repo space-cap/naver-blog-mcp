@@ -7,10 +7,10 @@
 Playwright 기반 네이버 블로그 MCP 서버 구축 프로젝트
 
 ## 📊 전체 진행률
-**Phase 1 완료: 10% (Day 1/25)**
+**Phase 1 완료: 30% (Day 1-3/25)**
 
 ```
-Phase 1 (Week 1-2): ████░░░░░░░░░░ 10%
+Phase 1 (Week 1-2): ████████░░░░░░ 30%
 Phase 2 (Week 3):   ░░░░░░░░░░░░░░  0%
 Phase 3 (Week 4):   ░░░░░░░░░░░░░░  0%
 ```
@@ -83,6 +83,74 @@ naver-blog-mcp/
 - ✅ `docs/implementation-plan.md` - 4주 구현 계획서
 - ✅ `.gitignore` - Playwright 관련 파일 및 민감 정보 보호
 
+### Phase 1 Day 2: 네이버 로그인 자동화 (2025-11-03)
+
+#### 1. DOM 셀렉터 정의
+- ✅ `src/naver_blog_mcp/automation/selectors.py` 생성
+- ✅ 로그인 페이지 셀렉터 (아이디, 비밀번호, 로그인 버튼)
+- ✅ 블로그 메인 페이지 셀렉터 (프로필, 글쓰기 버튼)
+- ✅ 글쓰기 페이지 셀렉터 (제목, iframe, 본문, 발행 버튼)
+- ✅ 글 보기 페이지 셀렉터 (제목, 본문)
+- ✅ 대체 셀렉터 지원 (UI 변경 대응)
+
+#### 2. 로그인 자동화 구현
+- ✅ `src/naver_blog_mcp/automation/login.py` 생성
+- ✅ 네이버 로그인 페이지 자동화
+- ✅ 로그인 성공 확인 (프로필 요소 체크)
+- ✅ 세션 저장 기능 (storage_state)
+- ✅ CAPTCHA 감지 및 수동 해결 지원
+- ✅ 로그인 에러 처리
+  - CaptchaDetectedError
+  - InvalidCredentialsError
+  - NaverLoginError
+
+#### 3. 세션 관리 구현
+- ✅ `src/naver_blog_mcp/services/session_manager.py` 생성
+- ✅ SessionManager 클래스 구현
+- ✅ 세션 파일 유효성 검사 (24시간)
+- ✅ 실제 페이지 접속으로 세션 유효성 확인
+- ✅ 세션 재사용 기능 (get_or_create_session)
+- ✅ 자동 재로그인 (만료 시)
+
+#### 4. 설정 관리
+- ✅ `src/naver_blog_mcp/config.py` 생성
+- ✅ 환경 변수 로딩 (dotenv)
+- ✅ Playwright 브라우저 설정
+- ✅ Stealth 모드 설정 (AutomationControlled 비활성화)
+- ✅ User-Agent 및 Viewport 설정
+
+#### 5. 테스트 작성
+- ✅ `tests/test_login.py` 생성
+- ✅ 기본 로그인 테스트
+- ✅ 세션 매니저 테스트
+- ✅ 세션 재사용 테스트
+
+### Phase 1 Day 3: 글쓰기 페이지 자동화 (2025-11-03)
+
+#### 1. 글쓰기 자동화 구현
+- ✅ `src/naver_blog_mcp/automation/post_actions.py` 생성
+- ✅ 글쓰기 페이지 네비게이션 (`navigate_to_post_write_page`)
+- ✅ 제목 입력 자동화 (`fill_post_title`)
+- ✅ iframe 처리 및 본문 입력 (`fill_post_content`)
+  - 스마트에디터 iframe 탐지
+  - contenteditable 영역 접근
+  - 텍스트 모드 및 HTML 모드 지원
+- ✅ 발행 버튼 클릭 (`publish_post`)
+- ✅ 발행 완료 확인 (URL 변경 감지)
+- ✅ 전체 프로세스 통합 (`create_blog_post`)
+
+#### 2. 에러 처리
+- ✅ NaverBlogPostError 클래스
+- ✅ 각 단계별 타임아웃 처리
+- ✅ 대체 셀렉터 자동 시도
+
+#### 3. 테스트 작성
+- ✅ `tests/test_post_write.py` 생성
+- ✅ 전체 글쓰기 프로세스 테스트
+- ✅ 단계별 글쓰기 테스트
+- ✅ 타임스탬프 포함 테스트 글 생성
+- ✅ 스크린샷 저장 (성공/실패)
+
 ---
 
 ## 🔄 진행 중인 작업
@@ -91,21 +159,13 @@ naver-blog-mcp/
 
 ---
 
-## 📋 다음 단계 (Phase 1 Day 2)
+## 📋 다음 단계 (Phase 1 Day 4)
 
-### 네이버 로그인 자동화 구현
-- [ ] `src/naver_blog_mcp/automation/login.py` 생성
-- [ ] 네이버 로그인 페이지 자동화
-- [ ] 로그인 성공 확인
-- [ ] 세션 저장 기능 (storage_state)
-- [ ] 저장된 세션 재사용 기능
-- [ ] 로그인 에러 처리 (잘못된 비밀번호, CAPTCHA)
-- [ ] 테스트 작성
-
-### 예상 작업 시간
-- 네이버 로그인 자동화: 2-3시간
-- 세션 저장/복원: 1-2시간
-- 테스트 및 디버깅: 1-2시간
+### DOM 셀렉터 정리 및 안정화
+- [ ] 실제 네이버 블로그에서 셀렉터 검증
+- [ ] 추가 대체 셀렉터 정의
+- [ ] 셀렉터 문서화
+- [ ] 에지 케이스 처리
 
 ---
 
@@ -113,8 +173,8 @@ naver-blog-mcp/
 
 ### Week 1 (Day 1-7)
 - [x] Day 1: 프로젝트 초기 설정 ✅
-- [ ] Day 2: 네이버 로그인 자동화
-- [ ] Day 3: 글쓰기 페이지 자동화
+- [x] Day 2: 네이버 로그인 자동화 ✅
+- [x] Day 3: 글쓰기 페이지 자동화 ✅
 - [ ] Day 4: DOM 셀렉터 정리
 - [ ] Day 5: MCP 서버 구조 설정
 - [ ] Day 6: 핵심 Tool 구현
@@ -176,10 +236,38 @@ naver-blog-mcp/
    - `.env` 파일은 `.gitignore`에 포함
    - `.env.example`로 템플릿 제공
 
+### Day 2 학습 내용
+1. **Playwright 세션 관리**
+   - `storage_state`로 쿠키와 로컬 스토리지 저장
+   - 파일 기반 세션 관리로 재로그인 최소화
+
+2. **CAPTCHA 처리**
+   - 헤드리스 모드에서 CAPTCHA 발생 빈도 높음
+   - 헤드 모드에서 수동 해결 방식 구현
+
+3. **대체 셀렉터 전략**
+   - UI 변경에 대비한 다중 셀렉터 정의
+   - 리스트 형태로 우선순위 관리
+
+### Day 3 학습 내용
+1. **iframe 처리**
+   - 스마트에디터는 iframe 내부에 위치
+   - `content_frame()` 메서드로 iframe 컨텍스트 접근
+   - contenteditable div로 본문 입력
+
+2. **자연스러운 입력**
+   - `type()` 메서드로 딜레이 포함 타이핑
+   - 자동화 감지 우회를 위한 휴먼 시뮬레이션
+
+3. **발행 완료 확인**
+   - URL 패턴 변경으로 발행 성공 확인
+   - `wait_for_url()`로 페이지 전환 대기
+
 ### 주의사항
 - `playwright-state/` 폴더는 절대 Git에 커밋하지 않을 것
 - 네이버 로그인 세션은 최대 24시간 유효
 - Headless 모드에서 CAPTCHA 발생 가능성 높음
+- 실제 테스트 시 테스트용 블로그 사용 권장
 
 ---
 

@@ -9,7 +9,7 @@ Playwright 기반 네이버 블로그 자동화 MCP 서버
 ## ✨ 주요 기능
 
 - ✅ **네이버 로그인 자동화** (세션 저장/재사용)
-- 🚧 네이버 블로그 글 작성 (진행 중)
+- ✅ **네이버 블로그 글 작성** (제목, 본문, 발행)
 - 🚧 이미지 업로드
 - 🚧 Markdown 지원
 - 🚧 카테고리 및 태그 관리
@@ -80,6 +80,19 @@ uv run python tests/test_login.py
 2. 세션을 `playwright-state/auth.json`에 저장
 3. 세션 재사용 테스트
 
+### 글쓰기 테스트
+
+```bash
+# 네이버 블로그 글 작성 테스트
+uv run python tests/test_post_write.py
+```
+
+이 테스트는 다음을 수행합니다:
+1. 저장된 세션으로 자동 로그인
+2. 글쓰기 페이지로 이동
+3. 제목과 본문 입력 (iframe 처리)
+4. 글 발행 및 URL 확인
+
 ### MCP 서버 실행 (개발 중)
 
 ```bash
@@ -96,6 +109,7 @@ naver-blog-mcp/
 │       ├── config.py              # 설정 관리
 │       ├── automation/            # Playwright 자동화
 │       │   ├── login.py          # ✅ 로그인 자동화
+│       │   ├── post_actions.py   # ✅ 글쓰기 자동화
 │       │   └── selectors.py      # ✅ DOM 셀렉터
 │       ├── services/              # 비즈니스 로직
 │       │   └── session_manager.py # ✅ 세션 관리
@@ -103,7 +117,8 @@ naver-blog-mcp/
 │       ├── models/                # 데이터 모델
 │       └── utils/                 # 유틸리티
 ├── tests/
-│   └── test_login.py              # ✅ 로그인 테스트
+│   ├── test_login.py              # ✅ 로그인 테스트
+│   └── test_post_write.py         # ✅ 글쓰기 테스트
 ├── docs/
 │   ├── architecture.md            # 아키텍처 설계서
 │   ├── implementation-plan.md     # 구현 계획서
@@ -113,11 +128,11 @@ naver-blog-mcp/
 
 ## 📊 개발 진행 상황
 
-**Phase 1 완료: 20% (Day 1-2/25)**
+**Phase 1 완료: 30% (Day 1-3/25)**
 
 - ✅ Day 1: 프로젝트 초기 설정
 - ✅ Day 2: 네이버 로그인 자동화
-- 🚧 Day 3: 글쓰기 페이지 자동화
+- ✅ Day 3: 글쓰기 페이지 자동화
 - 🚧 Day 4-7: MCP 서버 구현
 
 자세한 진행 상황은 [docs/progress.md](docs/progress.md)를 참고하세요.
@@ -130,8 +145,11 @@ naver-blog-mcp/
 # 모든 테스트
 uv run pytest tests/ -v
 
-# 특정 테스트
+# 로그인 테스트
 uv run python tests/test_login.py
+
+# 글쓰기 테스트
+uv run python tests/test_post_write.py
 ```
 
 ### 코드 포매팅
@@ -151,13 +169,13 @@ uv run mypy src/
 
 ```bash
 # Inspector 모드
-PWDEBUG=1 uv run python tests/test_login.py
+PWDEBUG=1 uv run python tests/test_post_write.py
 
 # 헤드 모드 (브라우저 보이기)
-HEADLESS=false uv run python tests/test_login.py
+HEADLESS=false uv run python tests/test_post_write.py
 
 # 느린 모드 (액션 사이 딜레이)
-SLOW_MO=500 uv run python tests/test_login.py
+SLOW_MO=500 uv run python tests/test_post_write.py
 ```
 
 ## ⚠️ 주의사항
