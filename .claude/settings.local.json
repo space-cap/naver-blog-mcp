@@ -9,7 +9,9 @@
       "Bash(uv sync:*)",
       "Bash(uv run:*)",
       "Bash(tree:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(chcp 65001)",
+      "Bash(PYTHONIOENCODING=utf-8 uv run python:*)"
     ],
     "deny": [],
     "ask": []
