@@ -7,15 +7,15 @@
 Playwright 기반 네이버 블로그 MCP 서버 구축 프로젝트
 
 ## 📊 전체 진행률
-**Phase 1 Day 5 완료: 36% (Day 5/14 in Phase 1)**
-**전체 프로젝트: 20% (Day 5/25)**
+**Phase 1 Day 6 완료: 43% (Day 6/14 in Phase 1)**
+**전체 프로젝트: 24% (Day 6/25)**
 
 ```
-Phase 1 (Week 1-2): █████░░░░░░░░░ 36%
+Phase 1 (Week 1-2): ██████░░░░░░░░ 43%
 Phase 2 (Week 3):   ░░░░░░░░░░░░░░  0%
 Phase 3 (Week 4):   ░░░░░░░░░░░░░░  0%
 
-전체 프로젝트:     █████░░░░░░░░░ 20%
+전체 프로젝트:     ██████░░░░░░░░ 24%
 ```
 
 **Day 4 건너뛰기**: 이미 Day 2-3에서 완료
@@ -246,6 +246,102 @@ naver-blog-mcp/
 ✅ 리소스 정리 완료
 ```
 
+### Phase 1 Day 6: 핵심 Tool 구현 완료 (2025-11-03) ✅
+
+#### 1. Tool 핸들러 함수 구현
+- ✅ `src/naver_blog_mcp/mcp/tools.py` 업데이트
+- ✅ **handle_create_post** 구현
+  - 기존 `create_blog_post` 자동화 모듈 통합
+  - 에러 처리 (NaverBlogPostError, Exception)
+  - JSON 응답 형식 (success, message, post_url, title)
+  - 로깅 추가
+- ✅ **handle_delete_post** 스텁 구현
+  - 기본 응답 구조 준비 (향후 구현 예정)
+- ✅ **handle_list_categories** 스텁 구현
+  - 기본 응답 구조 준비 (향후 구현 예정)
+
+#### 2. MCP 서버에 Tool 등록
+- ✅ `src/naver_blog_mcp/server.py` 업데이트
+- ✅ **_register_tools() 메서드 구현**
+  - `@server.call_tool()` 데코레이터 사용
+  - Tool 이름별 핸들러 라우팅
+  - 페이지 인스턴스 주입
+  - JSON 응답 변환
+  - 에러 처리 및 로깅
+- ✅ **@server.list_tools() 구현**
+  - TOOLS_METADATA에서 Tool 목록 제공
+  - Claude가 사용 가능한 Tool 발견
+
+#### 3. 기존 자동화 모듈 통합
+- ✅ `automation/post_actions.py` 임포트
+- ✅ `create_blog_post()` 함수 재사용
+- ✅ 세션 관리 자동 처리
+- ✅ 에러 타입 매핑
+
+#### 4. Tool 실행 테스트
+- ✅ `tests/test_tools.py` 생성
+- ✅ **Tool 등록 테스트**
+  - 서버 인스턴스 생성 확인
+  - Tool 핸들러 등록 확인
+- ✅ **create_post Tool 실행 테스트**
+  - 브라우저 초기화 확인
+  - 실제 블로그 글 작성 수행
+  - 발행 완료 URL 확인
+
+#### 5. 테스트 결과
+```
+============================================================
+MCP Tool 핸들러 테스트 시작
+============================================================
+🔧 MCP Tool 등록 테스트
+
+✅ 서버 인스턴스 생성 완료
+✅ Tool 등록 완료 (3개)
+
+🎉 Tool 등록 테스트 통과!
+
+🔧 create_post Tool 실행 테스트
+
+✅ 서버 인스턴스 생성 완료
+✅ 저장된 세션 재사용: playwright-state/auth.json
+✅ 브라우저 및 세션 초기화 완료
+✅ 페이지 생성 완료
+
+📝 테스트 글 작성 시작...
+   제목: [MCP 테스트] Tool 핸들러 테스트
+   본문: 이것은 MCP Tool 핸들러 테스트를 위한 글입니다...
+
+✅ 글쓰기 페이지로 이동
+✅ 제목 입력 완료 (클릭 방식)
+✅ 본문 입력 완료 (iframe 방식)
+✅ 발행 버튼 클릭 성공
+✅ 발행 완료: https://blog.naver.com/070802/224063683006
+
+✅ 글 작성 성공!
+   URL: https://blog.naver.com/070802/224063683006
+   메시지: 글이 성공적으로 발행되었습니다.
+
+🎉 create_post Tool 테스트 완료!
+✅ 리소스 정리 완료
+
+============================================================
+모든 테스트 완료!
+============================================================
+```
+
+#### 6. 주요 성과
+- ✅ **완전한 end-to-end 동작 확인**
+  - MCP Server → Tool Handler → Automation Module
+  - 실제 네이버 블로그 글 작성 성공
+  - 발행된 글 URL: https://blog.naver.com/070802/224063683006
+- ✅ **3개 Tool 등록 완료**
+  - naver_blog_create_post (구현 완료)
+  - naver_blog_delete_post (스텁)
+  - naver_blog_list_categories (스텁)
+- ✅ **기존 코드 재사용**
+  - 중복 없이 automation 모듈 통합
+  - 세션 관리 자동화
+
 ---
 
 ## 🔄 진행 중인 작업
@@ -254,15 +350,13 @@ naver-blog-mcp/
 
 ---
 
-## 📋 다음 단계 (Phase 1 Day 6)
+## 📋 다음 단계 (Phase 1 Day 7)
 
-### 핵심 Tool 구현
-- [ ] `naver_blog_create_post` Tool 핸들러 작성
-- [ ] `naver_blog_delete_post` Tool 핸들러 작성
-- [ ] `naver_blog_list_categories` Tool 핸들러 작성
-- [ ] MCP Tool 데코레이터 연동
-- [ ] 기존 자동화 모듈(`post_actions.py`) 통합
-- [ ] Tool 실행 테스트
+### 통합 테스트
+- [ ] MCP 서버 시작 검증
+- [ ] Claude Desktop 연동 테스트
+- [ ] 실제 블로그 포스팅 확인
+- [ ] 에러 시나리오 테스트
 
 ---
 
@@ -274,7 +368,7 @@ naver-blog-mcp/
 - [x] Day 3: 글쓰기 페이지 자동화 ✅
 - [x] Day 4: DOM 셀렉터 정리 ✅ (Day 2-3에 포함)
 - [x] Day 5: MCP 서버 구조 설정 ✅
-- [ ] Day 6: 핵심 Tool 구현
+- [x] Day 6: 핵심 Tool 구현 ✅
 - [ ] Day 7: 통합 테스트
 
 ### Week 2 (Day 8-14)

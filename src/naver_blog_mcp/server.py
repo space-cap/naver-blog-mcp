@@ -15,6 +15,12 @@ from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 
 from .config import get_browser_config, config
 from .services.session_manager import SessionManager
+from .mcp.tools import (
+    TOOLS_METADATA,
+    handle_create_post,
+    handle_delete_post,
+    handle_list_categories,
+)
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -45,8 +51,68 @@ class NaverBlogMCPServer:
 
     def _register_tools(self):
         """MCP Tool들을 등록합니다."""
-        # Day 6에서 구현 예정
-        logger.info("Tools will be registered in Day 6")
+        logger.info("Registering MCP tools...")
+
+        # naver_blog_create_post Tool 등록
+        @self.server.call_tool()
+        async def call_tool(name: str, arguments: dict) -> list[dict]:
+            """Tool 호출 핸들러."""
+            logger.info(f"Tool called: {name} with arguments: {arguments}")
+
+            try:
+                # 페이지 가져오기
+                page = await self.get_page()
+
+                # Tool별 핸들러 호출
+                if name == "naver_blog_create_post":
+                    result = await handle_create_post(
+                        page=page,
+                        title=arguments["title"],
+                        content=arguments["content"],
+                        category=arguments.get("category"),
+                        tags=arguments.get("tags"),
+                        publish=arguments.get("publish", True),
+                    )
+                elif name == "naver_blog_delete_post":
+                    result = await handle_delete_post(
+                        page=page, post_url=arguments["post_url"]
+                    )
+                elif name == "naver_blog_list_categories":
+                    result = await handle_list_categories(page=page)
+                else:
+                    return [
+                        {
+                            "type": "text",
+                            "text": f"알 수 없는 Tool: {name}",
+                        }
+                    ]
+
+                # 결과를 MCP 형식으로 변환
+                import json
+
+                return [
+                    {
+                        "type": "text",
+                        "text": json.dumps(result, ensure_ascii=False, indent=2),
+                    }
+                ]
+
+            except Exception as e:
+                logger.error(f"Tool execution error: {e}", exc_info=True)
+                return [
+                    {
+                        "type": "text",
+                        "text": f"오류 발생: {str(e)}",
+                    }
+                ]
+
+        # list_tools 핸들러 등록
+        @self.server.list_tools()
+        async def list_tools() -> list[dict]:
+            """사용 가능한 Tool 목록을 반환합니다."""
+            return list(TOOLS_METADATA.values())
+
+        logger.info(f"Registered {len(TOOLS_METADATA)} tools")
 
     async def initialize(self):
         """브라우저 및 세션 초기화."""
