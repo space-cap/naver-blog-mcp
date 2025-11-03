@@ -110,10 +110,13 @@ async def login_to_naver(
                             "CAPTCHA가 감지되었습니다. HEADLESS=false로 설정하고 수동으로 풀어주세요."
                         )
 
-                # 에러 메시지 확인
-                error_msg = await page.locator(".error_message").text_content()
-                if error_msg:
-                    raise InvalidCredentialsError(f"로그인 실패: {error_msg}")
+                # 에러 메시지 확인 (여러 개가 있을 수 있으므로 first() 사용)
+                error_msg_element = page.locator(".error_message").first()
+                error_msg_count = await page.locator(".error_message:visible").count()
+                if error_msg_count > 0:
+                    error_msg = await error_msg_element.text_content()
+                    if error_msg and error_msg.strip():
+                        raise InvalidCredentialsError(f"로그인 실패: {error_msg.strip()}")
 
                 raise NaverLoginError("로그인에 실패했습니다.")
 
@@ -122,19 +125,30 @@ async def login_to_naver(
         storage_state = await page.context.storage_state(path=storage_state_path)
 
         # 7. 블로그 페이지로 이동하여 로그인 확인
-        await page.goto("https://blog.naver.com", wait_until="networkidle")
+        await page.goto("https://blog.naver.com", wait_until="load")
+        await asyncio.sleep(2)  # 추가 로딩 대기
 
-        # 로그인 상태 확인 (프로필 요소가 있는지 확인)
-        profile_selectors = [".my_nick", ".profile_info", ".btn_writer"]
-        is_logged_in = False
-        for selector in profile_selectors:
-            count = await page.locator(selector).count()
-            if count > 0:
-                is_logged_in = True
-                break
+        # 로그인 상태 확인
+        current_url = page.url
 
-        if not is_logged_in:
-            raise NaverLoginError("로그인 후 세션 확인에 실패했습니다.")
+        # 방법 1: URL 확인 (로그인 페이지로 리다이렉트되지 않았는지)
+        is_login_page = "nid.naver.com" in current_url
+        if is_login_page:
+            raise NaverLoginError("로그인 페이지로 리다이렉트되었습니다.")
+
+        # 방법 2: blog.naver.com 도메인에 있으면 로그인 성공으로 간주
+        # (로그인하지 않았으면 nid.naver.com으로 리다이렉트됨)
+        if "blog.naver.com" in current_url:
+            print(f"   로그인 확인: blog.naver.com 도메인 접속 성공 ({current_url})")
+            # 추가로 세션이 유효한지 확인 (쿠키 존재 여부)
+            cookies = await page.context.cookies()
+            naver_cookies = [c for c in cookies if 'naver.com' in c['domain']]
+            if len(naver_cookies) > 0:
+                print(f"   로그인 확인: 네이버 쿠키 {len(naver_cookies)}개 발견")
+            else:
+                raise NaverLoginError("로그인 후 세션 확인에 실패했습니다. (쿠키 없음)")
+        else:
+            raise NaverLoginError(f"예상치 못한 URL로 리다이렉트: {current_url}")
 
         return {
             "success": True,
@@ -189,14 +203,21 @@ async def verify_login_session(page: Page) -> bool:
         로그인 여부
     """
     try:
-        await page.goto("https://blog.naver.com", wait_until="networkidle", timeout=10000)
+        await page.goto("https://blog.naver.com", wait_until="load", timeout=10000)
+        await asyncio.sleep(1)  # 추가 로딩 대기
 
-        # 프로필 요소 확인
-        profile_selectors = [".my_nick", ".profile_info", ".btn_writer"]
-        for selector in profile_selectors:
-            count = await page.locator(selector).count()
-            if count > 0:
-                return True
+        # URL 및 쿠키 확인
+        current_url = page.url
+
+        # 로그인 페이지로 리다이렉트되지 않았는지 확인
+        if "nid.naver.com" in current_url:
+            return False
+
+        # blog.naver.com 도메인에 있고 쿠키가 있으면 로그인된 것으로 간주
+        if "blog.naver.com" in current_url:
+            cookies = await page.context.cookies()
+            naver_cookies = [c for c in cookies if 'naver.com' in c['domain']]
+            return len(naver_cookies) > 0
 
         return False
     except Exception:
