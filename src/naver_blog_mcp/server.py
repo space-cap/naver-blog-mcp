@@ -11,6 +11,7 @@ from typing import Optional
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
+from mcp.types import Tool
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 
 from .config import get_browser_config, config
@@ -123,9 +124,17 @@ class NaverBlogMCPServer:
 
         # list_tools 핸들러 등록
         @self.server.list_tools()
-        async def list_tools() -> list[dict]:
+        async def list_tools() -> list[Tool]:
             """사용 가능한 Tool 목록을 반환합니다."""
-            return list(TOOLS_METADATA.values())
+            # dict를 Tool 객체로 변환
+            return [
+                Tool(
+                    name=tool_data["name"],
+                    description=tool_data["description"],
+                    inputSchema=tool_data["inputSchema"]
+                )
+                for tool_data in TOOLS_METADATA.values()
+            ]
 
         logger.info(f"Registered {len(TOOLS_METADATA)} tools")
 
@@ -204,11 +213,16 @@ class NaverBlogMCPServer:
             await self.cleanup()
 
 
-async def main():
-    """서버 엔트리포인트."""
+async def async_main():
+    """비동기 서버 엔트리포인트."""
     server = NaverBlogMCPServer()
     await server.run()
 
 
+def main():
+    """동기 서버 엔트리포인트 (CLI 진입점)."""
+    asyncio.run(async_main())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

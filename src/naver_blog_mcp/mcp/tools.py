@@ -20,7 +20,7 @@ TOOLS_METADATA = {
     "naver_blog_create_post": {
         "name": "naver_blog_create_post",
         "description": "네이버 블로그에 새 글을 작성합니다. 이미지 첨부도 지원합니다.",
-        "input_schema": {
+        "inputSchema": {
             "type": "object",
             "properties": {
                 "title": {
@@ -57,7 +57,7 @@ TOOLS_METADATA = {
     "naver_blog_delete_post": {
         "name": "naver_blog_delete_post",
         "description": "네이버 블로그의 글을 삭제합니다.",
-        "input_schema": {
+        "inputSchema": {
             "type": "object",
             "properties": {
                 "post_url": {
@@ -71,7 +71,7 @@ TOOLS_METADATA = {
     "naver_blog_list_categories": {
         "name": "naver_blog_list_categories",
         "description": "네이버 블로그의 카테고리 목록을 가져옵니다.",
-        "input_schema": {
+        "inputSchema": {
             "type": "object",
             "properties": {},
             "required": [],
