@@ -10,6 +10,7 @@ from playwright.async_api import Page
 
 from ..automation.post_actions import create_blog_post, NaverBlogPostError
 from ..automation.image_upload import upload_images
+from ..automation.category_actions import get_categories
 from ..utils.retry import retry_on_error
 from ..utils.error_handler import handle_playwright_error
 from ..utils.exceptions import NaverBlogError, UploadError
@@ -232,13 +233,32 @@ async def handle_list_categories(page: Page) -> Dict[str, Any]:
         {
             "success": bool,
             "message": str,
-            "categories": list[str]
+            "categories": [
+                {
+                    "name": str,
+                    "url": str,
+                    "categoryNo": str
+                },
+                ...
+            ]
         }
     """
-    # TODO: Day 6에서 구현 예정
-    logger.warning("handle_list_categories: 아직 구현되지 않았습니다.")
-    return {
-        "success": False,
-        "message": "카테고리 목록 조회 기능은 아직 구현되지 않았습니다.",
-        "categories": [],
-    }
+    logger.info("카테고리 목록 조회 시작")
+
+    try:
+        result = await get_categories(page)
+
+        if result["success"]:
+            logger.info(f"카테고리 조회 완료: {len(result['categories'])}개")
+        else:
+            logger.error(f"카테고리 조회 실패: {result['message']}")
+
+        return result
+
+    except Exception as e:
+        logger.error(f"카테고리 조회 중 예외 발생: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"카테고리 조회 실패: {str(e)}",
+            "categories": []
+        }
