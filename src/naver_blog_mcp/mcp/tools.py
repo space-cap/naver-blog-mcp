@@ -55,20 +55,21 @@ TOOLS_METADATA = {
             "required": ["title", "content"],
         },
     },
-    "naver_blog_delete_post": {
-        "name": "naver_blog_delete_post",
-        "description": "네이버 블로그의 글을 삭제합니다.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "post_url": {
-                    "type": "string",
-                    "description": "삭제할 글의 URL",
-                },
-            },
-            "required": ["post_url"],
-        },
-    },
+    # NOTE: 글 삭제 기능은 일단 비활성화 (필요시 추후 구현)
+    # "naver_blog_delete_post": {
+    #     "name": "naver_blog_delete_post",
+    #     "description": "네이버 블로그의 글을 삭제합니다.",
+    #     "inputSchema": {
+    #         "type": "object",
+    #         "properties": {
+    #             "post_url": {
+    #                 "type": "string",
+    #                 "description": "삭제할 글의 URL",
+    #             },
+    #         },
+    #         "required": ["post_url"],
+    #     },
+    # },
     "naver_blog_list_categories": {
         "name": "naver_blog_list_categories",
         "description": "네이버 블로그의 카테고리 목록을 가져옵니다.",
@@ -198,28 +199,29 @@ async def handle_create_post(
         }
 
 
-async def handle_delete_post(page: Page, post_url: str) -> Dict[str, Any]:
-    """네이버 블로그의 글을 삭제합니다.
-
-    Args:
-        page: Playwright Page 객체 (로그인된 상태)
-        post_url: 삭제할 글의 URL
-
-    Returns:
-        작업 결과 딕셔너리
-        {
-            "success": bool,
-            "message": str,
-            "post_url": str
-        }
-    """
-    # TODO: Day 6에서 구현 예정
-    logger.warning("handle_delete_post: 아직 구현되지 않았습니다.")
-    return {
-        "success": False,
-        "message": "글 삭제 기능은 아직 구현되지 않았습니다.",
-        "post_url": post_url,
-    }
+# NOTE: 글 삭제 기능은 일단 비활성화 (필요시 추후 구현)
+# async def handle_delete_post(page: Page, post_url: str) -> Dict[str, Any]:
+#     """네이버 블로그의 글을 삭제합니다.
+#
+#     Args:
+#         page: Playwright Page 객체 (로그인된 상태)
+#         post_url: 삭제할 글의 URL
+#
+#     Returns:
+#         작업 결과 딕셔너리
+#         {
+#             "success": bool,
+#             "message": str,
+#             "post_url": str
+#         }
+#     """
+#     # TODO: 필요시 추후 구현
+#     logger.warning("handle_delete_post: 아직 구현되지 않았습니다.")
+#     return {
+#         "success": False,
+#         "message": "글 삭제 기능은 아직 구현되지 않았습니다.",
+#         "post_url": post_url,
+#     }
 
 
 async def handle_list_categories(page: Page) -> Dict[str, Any]:

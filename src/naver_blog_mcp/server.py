@@ -19,7 +19,7 @@ from .services.session_manager import SessionManager
 from .mcp.tools import (
     TOOLS_METADATA,
     handle_create_post,
-    handle_delete_post,
+    # handle_delete_post,  # 비활성화
     handle_list_categories,
 )
 from .utils.trace_manager import trace_manager
@@ -80,10 +80,10 @@ class NaverBlogMCPServer:
                         images=arguments.get("images"),
                         publish=arguments.get("publish", True),
                     )
-                elif name == "naver_blog_delete_post":
-                    result = await handle_delete_post(
-                        page=page, post_url=arguments["post_url"]
-                    )
+                # elif name == "naver_blog_delete_post":
+                #     result = await handle_delete_post(
+                #         page=page, post_url=arguments["post_url"]
+                #     )
                 elif name == "naver_blog_list_categories":
                     result = await handle_list_categories(page=page)
                 else:
