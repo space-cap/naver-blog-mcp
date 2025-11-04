@@ -177,8 +177,8 @@ async def _wait_for_captcha_manual(page: Page, timeout: int = 60000) -> None:
     Raises:
         NaverLoginError: CAPTCHA를 풀지 못한 경우
     """
-    print("\n⚠️  CAPTCHA가 감지되었습니다.")
-    print("브라우저에서 CAPTCHA를 풀어주세요. (60초 대기)")
+    logger.warning("CAPTCHA가 감지되었습니다.")
+    logger.info("브라우저에서 CAPTCHA를 풀어주세요. (60초 대기)")
 
     try:
         # CAPTCHA iframe이 사라질 때까지 대기
@@ -186,7 +186,7 @@ async def _wait_for_captcha_manual(page: Page, timeout: int = 60000) -> None:
             "document.querySelector('iframe[src*=\"captcha\"]') === null",
             timeout=timeout,
         )
-        print("✅ CAPTCHA 해결 완료!")
+        logger.info("CAPTCHA 해결 완료!")
         await asyncio.sleep(2)  # 추가 대기
     except PlaywrightTimeout:
         raise NaverLoginError("CAPTCHA 해결 시간 초과")

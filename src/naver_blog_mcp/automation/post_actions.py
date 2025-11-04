@@ -1,6 +1,7 @@
 """네이버 블로그 글쓰기 자동화."""
 
 import asyncio
+import logging
 from typing import Optional, Dict, Any
 from pathlib import Path
 
@@ -14,6 +15,9 @@ from .selectors import (
     POST_WRITE_CATEGORY_BTN,
     POST_WRITE_TAG_INPUT,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class NaverBlogPostError(Exception):
@@ -88,7 +92,7 @@ async def navigate_to_post_write_page(
         if ("postwrite" in current_url.lower() or
             "PostWriteForm" in current_url or
             "Redirect=Write" in current_url):
-            print(f"✅ 글쓰기 페이지로 이동: {current_url}")
+            logger.info(f"글쓰기 페이지로 이동: {current_url}")
             return
 
         # 제목 입력란 확인 (추가 검증)
@@ -105,7 +109,7 @@ async def navigate_to_post_write_page(
             title_input_exists = count > 0
 
         if title_input_exists:
-            print(f"✅ 글쓰기 페이지로 이동: {url}")
+            logger.info(f"글쓰기 페이지로 이동: {url}")
             return
 
         raise NaverBlogPostError(f"글쓰기 페이지 로딩에 실패했습니다. 현재 URL: {current_url}")
@@ -155,7 +159,7 @@ async def fill_post_title(page: Page, title: str) -> None:
                             await element.fill(title)
 
                         title_filled = True
-                        print(f"✅ 제목 입력 완료: {title} (selector: {selector})")
+                        logger.info(f"제목 입력 완료: {title} (selector: {selector})")
                         break
                 except Exception as e:
                     print(f"   셀렉터 {selector} 실패: {e}")
@@ -169,7 +173,7 @@ async def fill_post_title(page: Page, title: str) -> None:
                 await asyncio.sleep(0.5)
                 await page.keyboard.type(title, delay=50)
                 title_filled = True
-                print(f"✅ 제목 입력 완료 (클릭 방식): {title}")
+                logger.info(f"제목 입력 완료 (클릭 방식): {title}")
             except Exception as e:
                 print(f"   클릭 방식 실패: {e}")
 
@@ -181,7 +185,7 @@ async def fill_post_title(page: Page, title: str) -> None:
                 await asyncio.sleep(0.3)
                 await page.keyboard.type(title, delay=50)
                 title_filled = True
-                print(f"✅ 제목 입력 완료 (Tab 방식): {title}")
+                logger.info(f"제목 입력 완료 (Tab 방식): {title}")
             except Exception as e:
                 print(f"   Tab 방식 실패: {e}")
 
@@ -268,7 +272,7 @@ async def fill_post_content(page: Page, content: str, use_html: bool = False) ->
                                     await asyncio.sleep(0.5)
                                     await content_body.type(content, delay=10)
                                     content_filled = True
-                                    print(f"✅ 본문 입력 완료 (iframe 방식, selector: {body_selector})")
+                                    logger.info(f"본문 입력 완료 (iframe 방식, selector: {body_selector})")
                                     break
                             except Exception as e:
                                 print(f"   iframe 내부 셀렉터 {body_selector} 실패: {e}")
@@ -309,7 +313,7 @@ async def fill_post_content(page: Page, content: str, use_html: bool = False) ->
                         # 본문 입력
                         await page.keyboard.type(content, delay=10)
                         content_filled = True
-                        print(f"✅ 본문 입력 완료 (직접 방식, selector: {selector})")
+                        logger.info(f"본문 입력 완료 (직접 방식, selector: {selector})")
                         break
                 except Exception as e:
                     print(f"   셀렉터 {selector} 실패: {e}")
@@ -433,7 +437,7 @@ async def publish_post(
                         element = frame.locator(f"button:has-text('{search_text}'):visible").first
                         await element.click(timeout=5000)
                         publish_clicked = True
-                        print(f"✅ 발행 버튼 클릭 성공 (Frame {idx})")
+                        logger.info(f"발행 버튼 클릭 성공 (Frame {idx})")
                         await asyncio.sleep(2)
                         break
 
@@ -516,7 +520,7 @@ async def publish_post(
                 # 글쓰기 페이지가 아닌 글 보기 페이지인지 체크
                 if "postwrite" not in post_url.lower() and "redirect=write" not in post_url.lower():
                     # URL이 {blog_id}/{post_id} 형태인지 확인
-                    print(f"✅ 발행 완료: {post_url}")
+                    logger.info(f"발행 완료: {post_url}")
                     return {
                         "success": True,
                         "message": "글이 성공적으로 발행되었습니다.",
