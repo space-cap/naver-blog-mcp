@@ -103,7 +103,8 @@ async def get_categories(
 
         # 4. 카테고리 정보 추출
         categories = []
-        seen_names = set()  # 중복 제거용
+        seen_category_nos = set()  # categoryNo로 중복 제거
+        seen_names = set()  # 이름으로도 중복 제거
 
         for link in category_links:
             try:
@@ -133,8 +134,9 @@ async def get_categories(
                 if blog_id and name == blog_id:
                     continue
 
-                # 이미 추가한 카테고리명이면 건너뛰기
-                if name in seen_names:
+                # URL에 특정 파라미터가 있으면 제외
+                # currentPage, from=postList 등이 있으면 페이징이나 내비게이션 링크
+                if "currentPage=" in href or "parentCategoryNo=" in href:
                     continue
 
                 # URL에서 categoryNo 추출
@@ -146,13 +148,23 @@ async def get_categories(
 
                 # categoryNo가 있는 경우만 추가 (실제 카테고리)
                 # categoryNo가 0인 "전체보기"는 제외
+                # 이미 추가한 categoryNo면 건너뛰기 (중복 제거)
                 if category_no and category_no != "0":
+                    # 같은 categoryNo가 이미 있으면 건너뛰기
+                    if category_no in seen_category_nos:
+                        continue
+
+                    # 같은 이름이 이미 있으면 건너뛰기
+                    if name in seen_names:
+                        continue
+
                     category_info = {
                         "name": name,
                         "url": href if href.startswith("http") else f"https://blog.naver.com{href}",
                         "categoryNo": category_no,
                     }
                     categories.append(category_info)
+                    seen_category_nos.add(category_no)
                     seen_names.add(name)
                     logger.debug(f"카테고리 추가: {name} (categoryNo={category_no})")
 
