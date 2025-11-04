@@ -4,12 +4,582 @@
 
 ## 📋 목차
 
-1. [사전 요구사항](#사전-요구사항)
-2. [설치 방법](#설치-방법)
-3. [Claude Desktop 연동](#claude-desktop-연동)
-4. [사용 가능한 기능](#사용-가능한-기능)
-5. [문제 해결](#문제-해결)
-6. [보안 고려사항](#보안-고려사항)
+### Part A: 개발자용 (배포 방법)
+1. [배포 방식 개요](#배포-방식-개요)
+2. [방식 1: GitHub 공개 저장소 (권장)](#방식-1-github-공개-저장소-권장)
+3. [방식 2: PyPI 패키지 배포](#방식-2-pypi-패키지-배포)
+4. [방식 3: Docker 컨테이너](#방식-3-docker-컨테이너)
+5. [방식 4: MCP Registry 등록](#방식-4-mcp-registry-등록)
+6. [유지보수 및 업데이트](#유지보수-및-업데이트)
+
+### Part B: 사용자용 (설치 및 사용)
+7. [사전 요구사항](#사전-요구사항)
+8. [설치 방법](#설치-방법)
+9. [Claude Desktop 연동](#claude-desktop-연동)
+10. [사용 가능한 기능](#사용-가능한-기능)
+11. [문제 해결](#문제-해결)
+12. [보안 고려사항](#보안-고려사항)
+
+---
+
+# Part A: 개발자용 (배포 방법)
+
+## 배포 방식 개요
+
+네이버 블로그 MCP 서버를 배포하는 4가지 주요 방식:
+
+| 방식 | 난이도 | 사용자 편의성 | 유지보수 | 권장도 |
+|------|--------|--------------|---------|--------|
+| GitHub 공개 저장소 | ⭐ 쉬움 | ⭐⭐⭐ 보통 | ⭐⭐⭐⭐ 쉬움 | ✅ **권장** |
+| PyPI 패키지 | ⭐⭐⭐ 어려움 | ⭐⭐⭐⭐⭐ 매우 쉬움 | ⭐⭐⭐ 보통 | 🔥 **최고** |
+| Docker 컨테이너 | ⭐⭐ 보통 | ⭐⭐⭐⭐ 쉬움 | ⭐⭐⭐⭐ 쉬움 | 🚀 추천 |
+| MCP Registry | ⭐⭐ 보통 | ⭐⭐⭐⭐⭐ 매우 쉬움 | ⭐⭐⭐⭐⭐ 매우 쉬움 | 🎯 미래 |
+
+**현재 상태**: 방식 1 (GitHub) 사용 중
+
+---
+
+## 방식 1: GitHub 공개 저장소 (권장)
+
+### 장점
+- ✅ 설정이 간단함
+- ✅ 버전 관리가 용이함
+- ✅ 이슈 트래킹 및 커뮤니티 활용
+- ✅ GitHub Actions로 CI/CD 자동화 가능
+- ✅ 무료
+
+### 단점
+- ⚠️ 사용자가 Git과 Python 환경 설정 필요
+- ⚠️ 의존성 설치 과정이 복잡할 수 있음
+
+### 배포 체크리스트
+
+#### 1. 저장소 공개 설정
+```bash
+# GitHub에서 저장소 설정
+# Settings > General > Danger Zone > Change visibility > Public
+```
+
+#### 2. 필수 파일 확인
+- ✅ `README.md` - 프로젝트 소개
+- ✅ `LICENSE` - 라이선스 (MIT 권장)
+- ✅ `.gitignore` - 민감 정보 제외
+- ✅ `pyproject.toml` - 의존성 정의
+- ✅ `docs/deployment-guide.md` - 배포 가이드
+- ✅ `.env.example` - 환경 변수 템플릿
+
+#### 3. 릴리스 생성
+```bash
+# 버전 태그 생성
+git tag -a v1.0.0 -m "첫 번째 공식 릴리스"
+git push origin v1.0.0
+
+# GitHub에서 Release 생성
+# Releases > Create a new release
+# - Tag: v1.0.0
+# - Title: 네이버 블로그 MCP v1.0.0
+# - Description: 주요 기능 설명
+# - Assets: 소스 코드 ZIP (자동 생성)
+```
+
+#### 4. README 배지 추가
+```markdown
+[![GitHub release](https://img.shields.io/github/v/release/space-cap/naver-blog-mcp)](https://github.com/space-cap/naver-blog-mcp/releases)
+[![Downloads](https://img.shields.io/github/downloads/space-cap/naver-blog-mcp/total)](https://github.com/space-cap/naver-blog-mcp/releases)
+[![Stars](https://img.shields.io/github/stars/space-cap/naver-blog-mcp)](https://github.com/space-cap/naver-blog-mcp)
+```
+
+#### 5. GitHub Topics 설정
+```
+Settings > General > Topics
+추가: mcp, claude, naver-blog, playwright, automation, python
+```
+
+---
+
+## 방식 2: PyPI 패키지 배포
+
+Python 패키지로 배포하면 사용자가 `pip install`로 간단히 설치 가능합니다.
+
+### 장점
+- ✅ 사용자가 `pip install naver-blog-mcp`로 한 줄로 설치
+- ✅ 의존성 자동 해결
+- ✅ 버전 관리 용이
+- ✅ 전문적인 인상
+
+### 단점
+- ⚠️ PyPI 계정 필요
+- ⚠️ 패키지 이름 중복 불가
+- ⚠️ 빌드 및 배포 과정 필요
+
+### 배포 단계
+
+#### 1. 패키지 준비
+
+**pyproject.toml 확인:**
+```toml
+[project]
+name = "naver-blog-mcp"
+version = "1.0.0"
+description = "Playwright-based MCP server for Naver Blog automation"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "MIT"}
+keywords = ["mcp", "claude", "naver", "blog", "automation", "playwright"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/space-cap/naver-blog-mcp"
+Documentation = "https://github.com/space-cap/naver-blog-mcp/blob/main/docs/deployment-guide.md"
+Repository = "https://github.com/space-cap/naver-blog-mcp"
+Issues = "https://github.com/space-cap/naver-blog-mcp/issues"
+
+[project.scripts]
+naver-blog-mcp = "naver_blog_mcp.server:main"
+```
+
+#### 2. 빌드
+
+```bash
+# 빌드 도구 설치
+pip install build twine
+
+# 패키지 빌드
+python -m build
+
+# 결과 확인
+ls dist/
+# naver_blog_mcp-1.0.0-py3-none-any.whl
+# naver_blog_mcp-1.0.0.tar.gz
+```
+
+#### 3. PyPI 업로드
+
+```bash
+# TestPyPI에 먼저 업로드 (테스트용)
+twine upload --repository testpypi dist/*
+
+# 테스트 설치
+pip install --index-url https://test.pypi.org/simple/ naver-blog-mcp
+
+# 정상 작동 확인 후 실제 PyPI에 업로드
+twine upload dist/*
+```
+
+#### 4. 사용자 설치 방법
+
+```bash
+# PyPI에서 설치
+pip install naver-blog-mcp
+
+# Playwright 브라우저 설치
+playwright install chromium
+
+# 실행
+naver-blog-mcp
+```
+
+### 자동 배포 (GitHub Actions)
+
+`.github/workflows/publish.yml`:
+```yaml
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: |
+          pip install build twine
+      - name: Build package
+        run: python -m build
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
+```
+
+---
+
+## 방식 3: Docker 컨테이너
+
+Docker를 사용하면 환경 차이로 인한 문제를 완전히 제거할 수 있습니다.
+
+### 장점
+- ✅ 환경 일관성 보장
+- ✅ 의존성 문제 없음
+- ✅ 쉬운 배포 및 실행
+- ✅ 격리된 환경
+
+### 단점
+- ⚠️ Docker 설치 필요
+- ⚠️ 이미지 크기가 큼 (Playwright 포함)
+- ⚠️ GUI 브라우저 실행 복잡 (Headless 모드 필요)
+
+### Dockerfile 작성
+
+```dockerfile
+FROM python:3.13-slim
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 시스템 의존성 설치
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python 의존성 설치
+COPY pyproject.toml uv.lock ./
+RUN pip install uv && uv sync --frozen
+
+# Playwright 브라우저 설치
+RUN uv run playwright install chromium --with-deps
+
+# 애플리케이션 코드 복사
+COPY src/ ./src/
+COPY .env.example ./.env
+
+# 포트 노출 (stdin/stdout 사용하므로 실제로는 불필요)
+EXPOSE 3000
+
+# 실행
+CMD ["uv", "run", "naver-blog-mcp"]
+```
+
+### Docker Compose
+
+`docker-compose.yml`:
+```yaml
+version: '3.8'
+
+services:
+  naver-blog-mcp:
+    build: .
+    container_name: naver-blog-mcp
+    environment:
+      - NAVER_BLOG_ID=${NAVER_BLOG_ID}
+      - NAVER_BLOG_PASSWORD=${NAVER_BLOG_PASSWORD}
+      - HEADLESS=true
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./playwright-state:/app/playwright-state
+    stdin_open: true
+    tty: true
+```
+
+### 사용 방법
+
+```bash
+# 이미지 빌드
+docker build -t naver-blog-mcp:latest .
+
+# Docker Hub에 푸시
+docker tag naver-blog-mcp:latest spacecap/naver-blog-mcp:latest
+docker push spacecap/naver-blog-mcp:latest
+
+# 사용자가 다운로드 및 실행
+docker pull spacecap/naver-blog-mcp:latest
+docker run -it --rm \
+  -e NAVER_BLOG_ID=your_id \
+  -e NAVER_BLOG_PASSWORD=your_password \
+  spacecap/naver-blog-mcp:latest
+```
+
+---
+
+## 방식 4: MCP Registry 등록
+
+Anthropic의 공식 MCP Registry에 등록하면 Claude Desktop에서 자동으로 검색 가능합니다.
+
+### 현재 상태
+- 🚧 MCP Registry는 아직 개발 중
+- 📅 2025년 중 출시 예정
+- 📝 현재는 수동 설정 필요
+
+### 미래 계획
+
+#### 1. MCP Registry 사전 준비
+
+**mcp-manifest.json 작성:**
+```json
+{
+  "name": "naver-blog-mcp",
+  "displayName": "네이버 블로그",
+  "description": "Playwright 기반 네이버 블로그 자동화 MCP 서버",
+  "version": "1.0.0",
+  "author": {
+    "name": "space-cap",
+    "url": "https://github.com/space-cap"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/space-cap/naver-blog-mcp"
+  },
+  "license": "MIT",
+  "keywords": ["blog", "naver", "automation", "korea"],
+  "server": {
+    "command": "uv",
+    "args": ["run", "naver-blog-mcp"],
+    "env": {
+      "PYTHONIOENCODING": "utf-8"
+    }
+  },
+  "tools": [
+    {
+      "name": "naver_blog_create_post",
+      "description": "네이버 블로그에 글을 작성합니다",
+      "parameters": {
+        "title": {"type": "string", "required": true},
+        "content": {"type": "string", "required": true},
+        "images": {"type": "array", "required": false}
+      }
+    },
+    {
+      "name": "naver_blog_list_categories",
+      "description": "블로그 카테고리 목록을 조회합니다",
+      "parameters": {}
+    }
+  ],
+  "configuration": {
+    "required": [
+      "NAVER_BLOG_ID",
+      "NAVER_BLOG_PASSWORD"
+    ],
+    "optional": [
+      "HEADLESS",
+      "SLOW_MO",
+      "LOG_LEVEL"
+    ]
+  }
+}
+```
+
+#### 2. 등록 절차 (출시 후)
+
+1. MCP Registry 웹사이트 접속
+2. GitHub 계정으로 로그인
+3. "Submit New Server" 클릭
+4. 저장소 URL 입력
+5. manifest.json 자동 검증
+6. 카테고리 및 태그 선택
+7. 제출 및 승인 대기
+
+#### 3. 사용자 경험
+
+Registry 등록 후:
+```
+Claude Desktop > Settings > MCP Servers > Browse Registry
+> 검색: "naver blog"
+> "네이버 블로그" 선택
+> "Install" 클릭
+> 자동 설치 및 설정 완료
+```
+
+---
+
+## 유지보수 및 업데이트
+
+### 버전 관리 전략
+
+**Semantic Versioning (SemVer) 사용:**
+- `MAJOR.MINOR.PATCH` (예: 1.2.3)
+- **MAJOR**: 호환성이 깨지는 변경
+- **MINOR**: 새로운 기능 추가 (호환 유지)
+- **PATCH**: 버그 수정
+
+### 릴리스 프로세스
+
+#### 1. 버전 업데이트
+
+```bash
+# pyproject.toml 버전 수정
+version = "1.1.0"
+
+# CHANGELOG.md 업데이트
+## [1.1.0] - 2025-11-06
+### Added
+- 새로운 기능 추가
+### Fixed
+- 버그 수정
+### Changed
+- 변경 사항
+```
+
+#### 2. 태그 및 릴리스
+
+```bash
+# Git 태그 생성
+git tag -a v1.1.0 -m "Release v1.1.0: 새 기능 추가"
+git push origin v1.1.0
+
+# GitHub Release 생성
+# - Release notes 자동 생성
+# - 변경 사항 요약
+# - 다운로드 링크
+```
+
+#### 3. 자동 테스트 (GitHub Actions)
+
+`.github/workflows/test.yml`:
+```yaml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.13']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install uv
+          uv sync
+          uv run playwright install chromium
+      - name: Run tests
+        run: |
+          uv run pytest tests/ -v
+```
+
+### 이슈 관리
+
+#### GitHub Issues 템플릿
+
+**버그 리포트 템플릿** (`.github/ISSUE_TEMPLATE/bug_report.md`):
+```markdown
+---
+name: 버그 리포트
+about: 버그를 발견하셨나요?
+---
+
+**버그 설명**
+발생한 버그를 명확하고 간결하게 설명해주세요.
+
+**재현 방법**
+1. '...'로 이동
+2. '...'를 클릭
+3. '...'까지 스크롤
+4. 오류 발생
+
+**예상 동작**
+어떤 동작을 기대하셨나요?
+
+**실제 동작**
+실제로 어떤 일이 발생했나요?
+
+**환경:**
+ - OS: [예: Windows 10]
+ - Python 버전: [예: 3.13.0]
+ - 버전: [예: v1.0.0]
+
+**추가 컨텍스트**
+버그에 대한 추가 정보가 있다면 작성해주세요.
+```
+
+**기능 요청 템플릿** (`.github/ISSUE_TEMPLATE/feature_request.md`):
+```markdown
+---
+name: 기능 요청
+about: 새로운 기능을 제안해주세요
+---
+
+**해결하려는 문제**
+어떤 문제를 해결하고 싶으신가요?
+
+**제안하는 해결책**
+어떤 기능을 추가하면 좋을까요?
+
+**고려한 대안**
+다른 해결 방법을 고려하셨나요?
+
+**추가 컨텍스트**
+관련 정보나 스크린샷이 있다면 첨부해주세요.
+```
+
+### 커뮤니티 운영
+
+#### 1. Discussions 활성화
+```
+Settings > General > Features > Discussions ✅
+```
+
+카테고리:
+- 📢 Announcements (공지사항)
+- 💡 Ideas (아이디어)
+- 🙏 Q&A (질문과 답변)
+- 🎉 Show and tell (사용 사례)
+
+#### 2. Contributing 가이드
+
+**CONTRIBUTING.md 작성:**
+```markdown
+# 기여 가이드
+
+## 버그 리포트
+- GitHub Issues 사용
+- 재현 가능한 예제 제공
+- 환경 정보 포함
+
+## Pull Request
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## 코드 스타일
+- Black formatter 사용
+- Ruff linter 통과
+- Type hints 사용
+
+## 테스트
+- 새 기능에는 테스트 추가
+- 모든 테스트가 통과해야 함
+```
+
+### 모니터링
+
+#### 다운로드 추적
+- GitHub Insights > Traffic
+- Release 다운로드 수
+- Clone 통계
+
+#### 사용자 피드백
+- GitHub Issues
+- Discussions
+- Star 및 Fork 수
+
+---
+
+# Part B: 사용자용 (설치 및 사용)
 
 ---
 
