@@ -1,21 +1,21 @@
 # 프로젝트 진행 상황
 
 ## 📅 최종 업데이트
-2025-01-04
+2025-11-05
 
 ## 🎯 프로젝트 개요
 Playwright 기반 네이버 블로그 MCP 서버 구축 프로젝트
 
 ## 📊 전체 진행률
-**Phase 1 Day 12 완료: 86% (Day 12/14 in Phase 1)**
-**전체 프로젝트: 48% (Day 12/25)**
+**Phase 1 Day 13 완료: 93% (Day 13/14 in Phase 1)**
+**전체 프로젝트: 52% (Day 13/25)**
 
 ```
-Phase 1 (Week 1-2): ████████████░░ 86%
+Phase 1 (Week 1-2): █████████████░ 93%
 Phase 2 (Week 3):   ░░░░░░░░░░░░░░  0%
 Phase 3 (Week 4):   ░░░░░░░░░░░░░░  0%
 
-전체 프로젝트:     ████████████░░ 48%
+전체 프로젝트:     █████████████░ 52%
 ```
 
 **Day 4 건너뛰기**: 이미 Day 2-3에서 완료
@@ -613,6 +613,177 @@ await file_input.set_input_files("path/to/image.jpg")
 
 ---
 
+## ✅ Day 13: 카테고리 목록 조회 및 MCP 서버 연동 완료 (2025-11-04)
+
+### 1. Claude Desktop 연동 문서 작성
+- ✅ **설치 및 설정 가이드** (`docs/installation-guide.md`)
+  - Python 3.13+ 설치 방법
+  - uv 패키지 매니저 설치
+  - 환경 변수 설정 (.env)
+  - Playwright 브라우저 설치
+  - 로컬 테스트 방법
+  - 문제 해결 가이드
+- ✅ **Claude Desktop 설정 가이드** (`docs/claude-desktop-guide.md`)
+  - Windows/macOS/Linux 설정 방법
+  - 플랫폼별 config 파일 위치
+  - JSON 설정 예제
+  - 연결 확인 방법
+  - 문제 해결 (로그 확인, 경로 설정)
+  - 보안 고려사항
+
+### 2. MCP 서버 연동 이슈 해결
+- ✅ **서버 연결 실패 문제**
+  - 문제: `<coroutine object main at 0x...>` 에러
+  - 원인: `pyproject.toml`의 CLI 진입점이 async 함수를 직접 호출
+  - 해결: 동기 `main()` 래퍼 함수 생성 (`asyncio.run(async_main())`)
+  - 수정 파일: `src/naver_blog_mcp/server.py:213-219`
+
+- ✅ **Tool 목록 노출 실패 문제**
+  - 문제: `'dict' object has no attribute 'name'`
+  - 원인: `list_tools()`가 `list[dict]` 반환, MCP SDK는 `list[Tool]` 기대
+  - 해결: `Tool` 타입으로 변환
+  ```python
+  from mcp.types import Tool
+
+  @self.server.list_tools()
+  async def list_tools() -> list[Tool]:
+      return [
+          Tool(
+              name=tool_data["name"],
+              description=tool_data["description"],
+              inputSchema=tool_data["inputSchema"]
+          )
+          for tool_data in TOOLS_METADATA.values()
+      ]
+  ```
+  - 수정 파일: `src/naver_blog_mcp/server.py:127-137`
+
+- ✅ **Tool 스키마 필드명 수정**
+  - 문제: snake_case `input_schema` 사용
+  - 해결: camelCase `inputSchema`로 변경
+  - 수정 파일: `src/naver_blog_mcp/mcp/tools.py`
+
+### 3. 카테고리 목록 조회 기능 구현
+- ✅ **UI 조사 및 연구**
+  - 생성 파일: `tests/test_category_ui_research.py`
+  - 생성 파일: `tests/test_category_research_v2.py`
+  - iframe#mainFrame 내부 구조 확인
+  - PostList URL 패턴 분석
+  - categoryNo 파라미터 추출 방법 확인
+
+- ✅ **category_actions.py 모듈 구현**
+  - 파일: `src/naver_blog_mcp/automation/category_actions.py`
+  - **get_categories() 함수 구현**
+    - blog_id 자동 감지 (URL에서 추출 또는 config에서 가져오기)
+    - iframe#mainFrame 접근
+    - PostList 링크 탐색 (`a[href*='PostList']`)
+    - categoryNo 추출 (정규식)
+    - **중복 제거 로직**:
+      - `seen_category_nos` set으로 categoryNo 중복 제거
+      - `seen_names` set으로 카테고리명 중복 제거
+      - 페이징 링크 필터링 (`currentPage=`, `parentCategoryNo=` 제외)
+      - categoryNo=0 (전체보기) 제외
+      - 블로그 이름, 숫자만 있는 텍스트 제외
+    - 반환 형식:
+    ```python
+    {
+        "success": bool,
+        "message": str,
+        "categories": [
+            {
+                "name": str,
+                "url": str,
+                "categoryNo": str
+            },
+            ...
+        ]
+    }
+    ```
+
+- ✅ **MCP Tool 핸들러 통합**
+  - 파일: `src/naver_blog_mcp/mcp/tools.py:225-264`
+  - `handle_list_categories()` 함수 구현
+  - `get_categories()` 호출 및 에러 처리
+  - 로깅 추가
+
+- ✅ **테스트 작성 및 검증**
+  - 파일: `tests/test_category_list.py`
+  - 로그인 세션 재사용
+  - 카테고리 조회 테스트
+  - **테스트 결과**: 1개 카테고리 성공적으로 조회
+    - 카테고리명: "블로그"
+    - categoryNo: 13
+    - URL: https://blog.naver.com/PostList.naver?blogId=070802&categoryNo=13
+
+### 4. 기능 우선순위 분석
+- ✅ **글 삭제 기능 분석** (`docs/delete-post-research.md`)
+  - 난이도: ⭐⭐⭐ (중간)
+  - 예상 소요 시간: 1-2일
+  - 결론: 낮은 우선순위 (사용 빈도 낮음)
+
+- ✅ **카테고리 목록 조회 분석** (`docs/category-list-research.md`)
+  - 난이도: ⭐ (매우 쉬움)
+  - 예상 소요 시간: 0.5-1일
+  - 결론: **최우선 순위** (글 작성 시 필요)
+
+- ✅ **전체 기능 우선순위** (`docs/feature-priority-analysis.md`)
+  - 권장 구현 순서:
+    1. ✅ category_list (Day 13 완료)
+    2. post_list (글 목록 조회)
+    3. post_update (글 수정)
+    4. post_delete (글 삭제)
+
+### 5. 주요 성과
+- ✅ **MCP 서버 안정화**
+  - Claude Desktop 정상 연동
+  - 3개 Tool 정상 노출 (create_post, delete_post, list_categories)
+  - Tool 호출 및 응답 검증 완료
+
+- ✅ **카테고리 조회 기능 완전 구현**
+  - iframe 기반 UI 접근
+  - 중복 제거 로직 (categoryNo + 이름)
+  - 페이징 링크 필터링
+  - 에러 처리 및 로깅
+
+- ✅ **상세 문서화**
+  - 설치 가이드 (한글)
+  - Claude Desktop 연동 가이드 (한글)
+  - 기능 분석 문서 3개
+
+### 6. 테스트 결과
+```
+============================================================
+네이버 블로그 카테고리 목록 조회 테스트
+============================================================
+
+성공 여부: True
+메시지: 1개의 카테고리를 찾았습니다
+
+총 1개의 카테고리:
+------------------------------------------------------------
+
+1. 블로그
+   URL: https://blog.naver.com/PostList.naver?blogId=070802&categoryNo=13
+   카테고리 번호: 13
+
+✅ 테스트 성공!
+```
+
+### 7. 생성/수정 파일
+- 생성: `docs/installation-guide.md`
+- 생성: `docs/claude-desktop-guide.md`
+- 생성: `docs/delete-post-research.md`
+- 생성: `docs/category-list-research.md`
+- 생성: `docs/feature-priority-analysis.md`
+- 생성: `src/naver_blog_mcp/automation/category_actions.py`
+- 생성: `tests/test_category_list.py`
+- 생성: `tests/test_category_ui_research.py`
+- 생성: `tests/test_category_research_v2.py`
+- 수정: `src/naver_blog_mcp/server.py` (async main 수정, Tool 타입 변환)
+- 수정: `src/naver_blog_mcp/mcp/tools.py` (inputSchema 수정, handle_list_categories 구현)
+
+---
+
 ## 🔄 진행 중인 작업
 
 현재 없음
@@ -660,8 +831,9 @@ await file_input.set_input_files("path/to/image.jpg")
 
 ### Week 2 (Day 8-14)
 - [x] Day 8-10: 에러 처리 및 재시도 로직 ✅
-- [ ] Day 11-12: 이미지 업로드
-- [ ] Day 13-14: Markdown 지원
+- [x] Day 11-12: 이미지 업로드 ✅
+- [x] Day 13: 카테고리 목록 조회 ✅
+- [ ] Day 14: Markdown 지원 (구현 불가)
 
 ---
 
