@@ -20,7 +20,6 @@ Playwright 기반 네이버 블로그 자동화를 위한 Model Context Protocol
 - ✅ **에러 처리 및 재시도** (네트워크 에러 자동 복구, UI 변경 대응)
 - ✅ **디버깅 도구** (Playwright Trace, 자동 스크린샷)
 - ✅ **카테고리 조회** (블로그 카테고리 목록)
-- ✅ **글 삭제** (URL로 글 삭제)
 
 ## 🛠️ 기술 스택
 
@@ -155,14 +154,14 @@ naver-blog-mcp/
 
 ## 📊 개발 진행 상황
 
-**Phase 1 완료: 86% (Day 12/14 완료)**
+**Phase 1 완료: 93% (Day 13/14 완료)**
 
 ```
-Phase 1 (Week 1-2): ████████████░░ 86%
+Phase 1 (Week 1-2): █████████████░ 93%
 Phase 2 (Week 3):   ░░░░░░░░░░░░░░  0%
 Phase 3 (Week 4):   ░░░░░░░░░░░░░░  0%
 
-전체 프로젝트:     ████████████░░ 48%
+전체 프로젝트:     █████████████░ 52%
 ```
 
 ### 완료된 마일스톤
@@ -176,12 +175,15 @@ Phase 3 (Week 4):   ░░░░░░░░░░░░░░  0%
   - 파일/Base64 업로드, 단일/다중 이미지
   - 7개 포맷 지원 (JPG, PNG, GIF, BMP, HEIC, HEIF, WebP)
   - 10MB 크기 제한, 자동 에러 처리
+- ✅ **Day 13**: 카테고리 목록 조회 및 MCP 서버 연동
+  - Claude Desktop 연동 문서 작성
+  - MCP 서버 인코딩 오류 수정
+  - 카테고리 목록 조회 기능 완전 구현
 
-### 프로젝트 종료
-- ❌ **Day 13-14**: Markdown 지원 (구현 불가)
+### 알려진 제한 사항
+- ❌ **Day 14**: Markdown 지원 (구현 불가)
   - 네이버 블로그는 Markdown을 지원하지 않음
   - HTML 편집 모드도 스마트에디터 ONE으로 통합되면서 제거됨
-  - **프로젝트는 Day 12까지 완료하고 종료**
 
 자세한 진행 상황은 [docs/progress.md](docs/progress.md)를 참고하세요.
 
@@ -198,13 +200,7 @@ Phase 3 (Week 4):   ░░░░░░░░░░░░░░  0%
 - `images` (선택): 이미지 파일 경로 배열
 - `publish` (선택): 즉시 발행 여부 (기본: true)
 
-### 2. `naver_blog_delete_post`
-블로그 글을 삭제합니다.
-
-**파라미터:**
-- `post_url` (필수): 삭제할 글의 URL
-
-### 3. `naver_blog_list_categories`
+### 2. `naver_blog_list_categories`
 블로그의 카테고리 목록을 조회합니다.
 
 **파라미터:** 없음
@@ -268,10 +264,16 @@ SLOW_MO=500 uv run python tests/test_post_write.py
 
 ## 📚 문서
 
+### 사용자용
+- **[배포 가이드](docs/deployment-guide.md)** - 설치 및 배포 완전 가이드 ⭐
+- [설치 가이드](docs/installation-guide.md) - 상세 설치 방법
+- [Claude Desktop 가이드](docs/claude-desktop-guide.md) - Claude Desktop 연동
+- [사용자 가이드](docs/user-guide.md) - 사용 방법 및 예제
+
+### 개발자용
 - [아키텍처 설계서](docs/architecture.md) - 상세 시스템 아키텍처
 - [구현 계획서](docs/implementation-plan.md) - 4주 구현 로드맵
 - [진행 상황](docs/progress.md) - 프로젝트 진행 현황
-- [사용자 가이드](docs/user-guide.md) - 완전한 사용 가이드
 
 ## 🎯 사용 예시
 
