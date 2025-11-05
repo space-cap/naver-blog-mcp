@@ -191,7 +191,7 @@ async def test_post_write_step_by_step():
 
 async def main():
     """메인 테스트 함수."""
-    print("\n" + "🔧 네이버 블로그 글쓰기 자동화 테스트" + "\n")
+    print("\n네이버 블로그 글쓰기 자동화 테스트\n")
 
     # 테스트 선택
     print("실행할 테스트를 선택하세요:")
