@@ -211,6 +211,8 @@ async def fill_post_title(page: Page, title: str) -> None:
         if not title_filled:
             raise NaverBlogPostError("제목 입력란을 찾을 수 없습니다.")
 
+        # 제목 입력 후 Enter 키를 눌러 본문으로 포커스 이동
+        await page.keyboard.press("Enter")
         await asyncio.sleep(0.5)
 
     except Exception as e:
