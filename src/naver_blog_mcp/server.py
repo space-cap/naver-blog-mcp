@@ -4,6 +4,15 @@
 MCP (Model Context Protocol) 서버를 제공합니다.
 """
 
+# Windows 콘솔 인코딩 설정 (가장 먼저 실행)
+import sys
+if sys.platform == "win32":
+    # stdout, stderr을 UTF-8로 강제 설정
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
+
 import asyncio
 import logging
 import os
@@ -109,7 +118,42 @@ class NaverBlogMCPServer:
                 ]
 
             except Exception as e:
+                error_msg = str(e)
                 logger.error(f"Tool execution error: {e}", exc_info=True)
+
+                # 세션 만료 감지 및 자동 재로그인
+                if "세션이 만료" in error_msg or "로그인 페이지로 리다이렉트" in error_msg:
+                    logger.warning("세션 만료 감지. 자동 재로그인을 시도합니다...")
+                    try:
+                        # 기존 컨텍스트 닫기
+                        if self.context:
+                            await self.context.close()
+
+                        # 세션 파일 삭제
+                        import os
+                        session_path = "playwright-state/auth.json"
+                        if os.path.exists(session_path):
+                            os.remove(session_path)
+                            logger.info(f"세션 파일 삭제: {session_path}")
+
+                        # 새 세션 생성 (자동 로그인)
+                        self.context = await self.session_manager.get_or_create_session(self.browser)
+                        logger.info("재로그인 완료. Tool을 다시 실행해주세요.")
+
+                        return [
+                            {
+                                "type": "text",
+                                "text": "세션이 만료되어 자동으로 재로그인했습니다. 요청을 다시 시도해주세요.",
+                            }
+                        ]
+                    except Exception as re_login_error:
+                        logger.error(f"재로그인 실패: {re_login_error}")
+                        return [
+                            {
+                                "type": "text",
+                                "text": f"재로그인 실패: {str(re_login_error)}. MCP 서버를 재시작해주세요.",
+                            }
+                        ]
 
                 # Trace 저장 (실패)
                 if self.context:
@@ -118,7 +162,7 @@ class NaverBlogMCPServer:
                 return [
                     {
                         "type": "text",
-                        "text": f"오류 발생: {str(e)}",
+                        "text": f"오류 발생: {error_msg}",
                     }
                 ]
 

@@ -88,6 +88,13 @@ async def navigate_to_post_write_page(
         current_url = page.url
         print(f"   현재 URL: {current_url}")
 
+        # 로그인 페이지로 리다이렉트되었는지 확인
+        if "nid.naver.com" in current_url or "nidlogin" in current_url:
+            raise NaverBlogPostError(
+                "세션이 만료되어 로그인 페이지로 리다이렉트되었습니다. "
+                "MCP 서버를 재시작하거나 세션을 갱신해주세요."
+            )
+
         # URL에 postwrite, PostWriteForm, Redirect=Write가 포함되어 있으면 성공으로 간주
         if ("postwrite" in current_url.lower() or
             "PostWriteForm" in current_url or
