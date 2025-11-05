@@ -157,12 +157,16 @@ async def fill_post_title(page: Page, title: str) -> None:
                         is_contenteditable = await element.get_attribute("contenteditable")
 
                         if is_contenteditable:
-                            # contenteditable div: 클릭 후 타이핑
+                            # contenteditable div: 클릭 후 기존 내용 삭제 후 타이핑
                             await element.click()
                             await asyncio.sleep(0.3)
+                            # 기존 내용 전체 선택 및 삭제
+                            await page.keyboard.press("Control+A")
+                            await page.keyboard.press("Backspace")
+                            await asyncio.sleep(0.2)
                             await element.type(title, delay=50)
                         else:
-                            # 일반 input: fill 사용
+                            # 일반 input: fill 사용 (자동으로 기존 내용 대체)
                             await element.fill(title)
 
                         title_filled = True
@@ -178,6 +182,10 @@ async def fill_post_title(page: Page, title: str) -> None:
                 # 제목 영역 대략적인 위치 클릭 (상단 중앙)
                 await page.mouse.click(450, 250)
                 await asyncio.sleep(0.5)
+                # 기존 내용 전체 선택 및 삭제
+                await page.keyboard.press("Control+A")
+                await page.keyboard.press("Backspace")
+                await asyncio.sleep(0.2)
                 await page.keyboard.type(title, delay=50)
                 title_filled = True
                 logger.info(f"제목 입력 완료 (클릭 방식): {title}")
@@ -190,6 +198,10 @@ async def fill_post_title(page: Page, title: str) -> None:
                 # 페이지 최상단으로 포커스 이동 후 Tab으로 제목까지 이동
                 await page.keyboard.press("Tab")
                 await asyncio.sleep(0.3)
+                # 기존 내용 전체 선택 및 삭제
+                await page.keyboard.press("Control+A")
+                await page.keyboard.press("Backspace")
+                await asyncio.sleep(0.2)
                 await page.keyboard.type(title, delay=50)
                 title_filled = True
                 logger.info(f"제목 입력 완료 (Tab 방식): {title}")
