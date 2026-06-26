@@ -20,7 +20,8 @@ class TraceManager:
         Args:
             traces_dir: Trace 파일 저장 디렉토리
         """
-        self.traces_dir = Path(traces_dir)
+        project_root = Path(__file__).parent.parent.parent.parent
+        self.traces_dir = project_root / traces_dir
         self.traces_dir.mkdir(parents=True, exist_ok=True)
         self.is_tracing = False
         self.current_trace_name: Optional[str] = None
