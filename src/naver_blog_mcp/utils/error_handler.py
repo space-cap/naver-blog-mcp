@@ -122,7 +122,8 @@ async def save_error_screenshot(
         저장된 스크린샷 경로
     """
     # 스크린샷 디렉토리 생성
-    screenshot_dir = Path("playwright-state/screenshots")
+    _project_root = Path(__file__).parent.parent.parent.parent
+    screenshot_dir = _project_root / "playwright-state" / "screenshots"
     screenshot_dir.mkdir(parents=True, exist_ok=True)
 
     # 파일명 생성
@@ -151,7 +152,8 @@ async def save_page_html(
         저장된 HTML 파일 경로
     """
     # HTML 디렉토리 생성
-    html_dir = Path("playwright-state/html")
+    _project_root = Path(__file__).parent.parent.parent.parent
+    html_dir = _project_root / "playwright-state" / "html"
     html_dir.mkdir(parents=True, exist_ok=True)
 
     # 파일명 생성

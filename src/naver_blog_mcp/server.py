@@ -45,7 +45,8 @@ class NaverBlogMCPServer:
         # 세션 관리자 초기화
         self.session_manager = SessionManager(
             user_id=config.NAVER_BLOG_ID,
-            password=config.NAVER_BLOG_PASSWORD
+            password=config.NAVER_BLOG_PASSWORD,
+            storage_path=config.SESSION_STORAGE_PATH,
         )
 
         # Tool 등록
