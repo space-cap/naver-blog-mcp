@@ -447,7 +447,7 @@ async def publish_post(
                 continue
 
         if not publish_clicked:
-            await page.screenshot(path="playwright-state/error_publish_btn.png")
+            await page.screenshot(path=str(Path(__file__).parent.parent.parent / "playwright-state" / "error_publish_btn.png"))
             raise NaverBlogPostError("발행 버튼을 찾을 수 없습니다.")
 
         # 2. 발행 설정 대화상자에서 최종 "발행" 버튼 클릭

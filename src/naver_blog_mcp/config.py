@@ -27,7 +27,8 @@ class Config:
 
     # 세션 설정
     SESSION_STORAGE_PATH: str = os.getenv(
-        "SESSION_STORAGE_PATH", "playwright-state/auth.json"
+        "SESSION_STORAGE_PATH",
+        str(project_root / "playwright-state" / "auth.json"),
     )
     SESSION_VALIDITY_HOURS: int = int(os.getenv("SESSION_VALIDITY_HOURS", "24"))
 

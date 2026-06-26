@@ -58,7 +58,8 @@ async def login_to_naver(
         NaverLoginError: 기타 로그인 에러
     """
     if storage_state_path is None:
-        storage_state_path = "playwright-state/auth.json"
+        _project_root = Path(__file__).parent.parent.parent
+        storage_state_path = str(_project_root / "playwright-state" / "auth.json")
 
     try:
         # 1. 로그인 페이지로 이동
