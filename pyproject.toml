@@ -44,3 +44,9 @@ target-version = "py313"
 [tool.mypy]
 python_version = "3.13"
 strict = true
+
+[dependency-groups]
+dev = [
+    "build>=1.3.0",
+    "twine>=6.2.0",
+]

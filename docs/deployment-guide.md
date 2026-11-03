@@ -101,6 +101,8 @@ Settings > General > Topics
 
 Python 패키지로 배포하면 사용자가 `pip install`로 간단히 설치 가능합니다.
 
+> 📘 **상세 가이드**: PyPI 배포에 대한 자세한 내용은 [PyPI 배포 가이드](./pypi-deployment-guide.md)를 참조하세요.
+
 ### 장점
 - ✅ 사용자가 `pip install naver-blog-mcp`로 한 줄로 설치
 - ✅ 의존성 자동 해결
@@ -150,16 +152,21 @@ naver-blog-mcp = "naver_blog_mcp.server:main"
 #### 2. 빌드
 
 ```bash
-# 빌드 도구 설치
-pip install build twine
+# 빌드 도구를 개발 의존성에 추가
+uv add --dev build twine
+
+# Windows 예약어 파일 제거 (있을 경우)
+# nul 파일이 있으면 빌드가 실패하므로 삭제
+rm nul 2>/dev/null || true  # Linux/macOS
+del nul 2>nul || exit /b 0  # Windows
 
 # 패키지 빌드
-python -m build
+uv run python -m build
 
 # 결과 확인
 ls dist/
-# naver_blog_mcp-1.0.0-py3-none-any.whl
-# naver_blog_mcp-1.0.0.tar.gz
+# naver_blog_mcp-0.1.0-py3-none-any.whl (39KB)
+# naver_blog_mcp-0.1.0.tar.gz (166KB)
 ```
 
 #### 3. PyPI 업로드

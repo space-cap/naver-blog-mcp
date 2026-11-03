@@ -19,7 +19,15 @@
       "Bash(dir:*)",
       "Bash(uv pip list:*)",
       "Bash(findstr:*)",
-      "Bash(uv add:*)"
+      "Bash(uv add:*)",
+      "Bash(set:*)",
+      "Bash(cat:*)",
+      "Bash(git restore:*)",
+      "Bash(if exist playwright-stateauth.json del playwright-stateauth.json)",
+      "Bash(del playwright-stateauth.json 2)",
+      "Bash(nul)",
+      "Bash(if exist \"%APPDATA%\\Claude\\logs\\mcp-server-naver-blog.log\" del \"%APPDATA%\\Claude\\logs\\mcp-server-naver-blog.log\")",
+      "Bash(del \"%APPDATA%\\Claude\\logs\\mcp-server-naver-blog.log\" 2)"
     ],
     "deny": [],
     "ask": []

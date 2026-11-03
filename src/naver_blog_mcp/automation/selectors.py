@@ -37,9 +37,9 @@ class NaverSelectors:
         ],
         "content_frame": ["iframe.se-iframe", "iframe#mainFrame"],
         "content_body": [
-            "div[contenteditable='true']",  # 일반 contenteditable
-            ".se-component-content",
+            ".se-component-content",        # 성공률 높음 (우선 시도)
             ".se-text-paragraph",
+            "div[contenteditable='true']",  # 일반 contenteditable (fallback)
         ],
         "category_select": [".blog2_series", "select[name='category']"],
         "tag_input": ["input[placeholder*='태그']", ".tag_input"],

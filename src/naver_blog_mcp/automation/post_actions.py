@@ -26,6 +26,68 @@ class NaverBlogPostError(Exception):
     pass
 
 
+async def close_iframe_popup(page: Page) -> None:
+    """
+    iframe 내부 팝업(도움말 등)을 닫습니다.
+
+    Args:
+        page: Playwright Page 객체
+    """
+    try:
+        logger.info("iframe 내부 팝업 닫기 시도 중...")
+
+        # iframe 찾기
+        iframe_selectors = POST_WRITE_CONTENT_FRAME if isinstance(POST_WRITE_CONTENT_FRAME, list) else [POST_WRITE_CONTENT_FRAME]
+
+        popup_closed = False
+        for iframe_selector in iframe_selectors:
+            try:
+                iframe_count = await page.locator(iframe_selector).count()
+                if iframe_count > 0:
+                    logger.debug(f"iframe 발견: {iframe_selector}")
+                    frame_element = await page.wait_for_selector(iframe_selector, timeout=3000)
+                    iframe = await frame_element.content_frame()
+
+                    if iframe:
+                        # iframe 내부 팝업 닫기
+                        popup_selectors = [
+                            "button:has-text('확인')",
+                            "button:has-text('닫기')",
+                            "button.se-popup-button-confirm",
+                            ".se-popup-button-confirm",
+                            "button.se-help-close-btn",
+                            ".se-help-close",
+                        ]
+
+                        for popup_selector in popup_selectors:
+                            try:
+                                popup_count = await iframe.locator(popup_selector).count()
+                                if popup_count > 0:
+                                    await iframe.locator(popup_selector).first.click(timeout=2000)
+                                    logger.info(f"iframe 내부 팝업 닫기 성공: {popup_selector}")
+                                    popup_closed = True
+                                    await asyncio.sleep(0.5)
+                                    break
+                            except Exception as e:
+                                logger.debug(f"팝업 셀렉터 {popup_selector} 시도 실패: {e}")
+                                continue
+
+                        if popup_closed:
+                            break
+            except Exception as e:
+                logger.debug(f"iframe 셀렉터 {iframe_selector} 시도 실패: {e}")
+                continue
+
+        if popup_closed:
+            logger.info("iframe 내부 팝업 닫기 완료")
+        else:
+            logger.debug("iframe 내부 팝업이 없거나 이미 닫혀있음")
+
+    except Exception as e:
+        # 팝업이 없는 경우는 정상이므로 에러를 발생시키지 않음
+        logger.debug(f"iframe 팝업 닫기 중 예외 발생 (무시): {e}")
+
+
 async def navigate_to_post_write_page(
     page: Page, blog_id: Optional[str] = None, timeout: int = 30000
 ) -> None:
@@ -146,6 +208,7 @@ async def fill_post_title(page: Page, title: str) -> None:
 
         # 방법 1: 일반적인 셀렉터 시도
         if isinstance(POST_WRITE_TITLE, list):
+            print("방법 1: 일반적인 셀렉터 시도")
             for selector in POST_WRITE_TITLE:
                 try:
                     element_count = await page.locator(selector).count()
@@ -170,7 +233,7 @@ async def fill_post_title(page: Page, title: str) -> None:
                             await element.fill(title)
 
                         title_filled = True
-                        logger.info(f"제목 입력 완료: {title} (selector: {selector})")
+                        logger.debug(f"제목 입력 완료: {title} (selector: {selector})")
                         break
                 except Exception as e:
                     print(f"   셀렉터 {selector} 실패: {e}")
@@ -178,6 +241,7 @@ async def fill_post_title(page: Page, title: str) -> None:
 
         # 방법 2: 제목 영역을 직접 클릭 (좌표 기반)
         if not title_filled:
+            print("방법 2: 제목 영역을 직접 클릭 (좌표 기반)")
             try:
                 # 제목 영역 대략적인 위치 클릭 (상단 중앙)
                 await page.mouse.click(450, 250)
@@ -188,12 +252,13 @@ async def fill_post_title(page: Page, title: str) -> None:
                 await asyncio.sleep(0.2)
                 await page.keyboard.type(title, delay=50)
                 title_filled = True
-                logger.info(f"제목 입력 완료 (클릭 방식): {title}")
+                logger.debug(f"제목 입력 완료 (클릭 방식): {title}")
             except Exception as e:
                 print(f"   클릭 방식 실패: {e}")
 
         # 방법 3: Tab 키로 이동
         if not title_filled:
+            print("방법 3: Tab 키로 이동")
             try:
                 # 페이지 최상단으로 포커스 이동 후 Tab으로 제목까지 이동
                 await page.keyboard.press("Tab")
@@ -204,7 +269,7 @@ async def fill_post_title(page: Page, title: str) -> None:
                 await asyncio.sleep(0.2)
                 await page.keyboard.type(title, delay=50)
                 title_filled = True
-                logger.info(f"제목 입력 완료 (Tab 방식): {title}")
+                logger.debug(f"제목 입력 완료 (Tab 방식): {title}")
             except Exception as e:
                 print(f"   Tab 방식 실패: {e}")
 
@@ -212,6 +277,7 @@ async def fill_post_title(page: Page, title: str) -> None:
             raise NaverBlogPostError("제목 입력란을 찾을 수 없습니다.")
 
         # 제목 입력 후 Enter 키를 눌러 본문으로 포커스 이동
+        print("제목 입력 후 Enter")
         await page.keyboard.press("Enter")
         await asyncio.sleep(0.5)
 
@@ -233,24 +299,6 @@ async def fill_post_content(page: Page, content: str, use_html: bool = False) ->
         NaverBlogPostError: 본문 입력 실패 시
     """
     try:
-        # 팝업이 있으면 먼저 닫기
-        try:
-            popup_selectors = [
-                "button:has-text('확인')",
-                "button:has-text('닫기')",
-                "button.se-popup-button-confirm",
-                ".se-popup-button-confirm",
-            ]
-            for popup_selector in popup_selectors:
-                popup_count = await page.locator(popup_selector).count()
-                if popup_count > 0:
-                    await page.click(popup_selector, timeout=2000)
-                    print(f"   팝업 닫기: {popup_selector}")
-                    await asyncio.sleep(0.5)
-                    break
-        except Exception as e:
-            print(f"   팝업 확인 실패 (무시): {e}")
-
         content_filled = False
 
         # 방법 1: iframe이 있는 경우 (구형 스마트에디터)
@@ -265,23 +313,6 @@ async def fill_post_content(page: Page, content: str, use_html: bool = False) ->
                     iframe_found = await frame_element.content_frame()
 
                     if iframe_found:
-                        # iframe 내부 팝업 닫기
-                        try:
-                            iframe_popup_selectors = [
-                                "button:has-text('확인')",
-                                "button:has-text('닫기')",
-                                ".se-popup-button-confirm",
-                            ]
-                            for popup_sel in iframe_popup_selectors:
-                                popup_count = await iframe_found.locator(popup_sel).count()
-                                if popup_count > 0:
-                                    await iframe_found.locator(popup_sel).click(timeout=2000)
-                                    print(f"   iframe 내부 팝업 닫기: {popup_sel}")
-                                    await asyncio.sleep(0.5)
-                                    break
-                        except Exception as e:
-                            print(f"   iframe 팝업 닫기 실패 (무시): {e}")
-
                         # iframe 내부에서 contenteditable 찾기
                         body_selectors = POST_WRITE_CONTENT_BODY if isinstance(POST_WRITE_CONTENT_BODY, list) else [POST_WRITE_CONTENT_BODY]
 
@@ -289,11 +320,12 @@ async def fill_post_content(page: Page, content: str, use_html: bool = False) ->
                             try:
                                 content_body = await iframe_found.wait_for_selector(body_selector, timeout=3000)
                                 if content_body:
-                                    await content_body.click()
-                                    await asyncio.sleep(0.5)
+                                    # 제목 입력 후 Enter를 눌렀으므로 커서가 이미 본문에 있음
+                                    # 클릭하지 않고 바로 타이핑
+                                    await asyncio.sleep(0.3)
                                     await content_body.type(content, delay=10)
                                     content_filled = True
-                                    logger.info(f"본문 입력 완료 (iframe 방식, selector: {body_selector})")
+                                    print(f"본문 입력 완료 (iframe 방식, selector: {body_selector})")
                                     break
                             except Exception as e:
                                 print(f"   iframe 내부 셀렉터 {body_selector} 실패: {e}")
@@ -324,10 +356,11 @@ async def fill_post_content(page: Page, content: str, use_html: bool = False) ->
                     element_count = await page.locator(selector).count()
                     if element_count > 0:
                         element = page.locator(selector).first
-                        await element.click()
-                        await asyncio.sleep(0.5)
+                        # 제목 입력 후 Enter를 눌렀으므로 커서가 이미 본문에 있음
+                        # 클릭하지 않고 바로 타이핑
+                        await asyncio.sleep(0.3)
 
-                        # 기존 플레이스홀더 텍스트 제거
+                        # 기존 플레이스홀더 텍스트가 있다면 제거
                         await page.keyboard.press("Control+A")
                         await asyncio.sleep(0.2)
 
@@ -598,13 +631,20 @@ async def create_blog_post(
         # 1. 글쓰기 페이지로 이동
         await navigate_to_post_write_page(page, blog_id)
 
-        # 2. 제목 입력
-        await fill_post_title(page, title)
+        # 2. iframe 내부 팝업 닫기
+        await close_iframe_popup(page)
 
-        # 3. 본문 입력
+        # 3. 제목 입력
+        await fill_post_title(page, title)
+        
+        print("제목 입력 완료! create_blog_post()")
+
+        # 4. 본문 입력
         await fill_post_content(page, content, use_html)
 
-        # 4. 발행
+        print("본문 입력 완료! create_blog_post()")
+
+        # 5. 발행
         result = await publish_post(page, wait_for_completion)
 
         result["title"] = title

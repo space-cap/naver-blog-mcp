@@ -1,4 +1,4 @@
-"""미국 증시 동향 블로그 포스팅 테스트."""
+"""힘내라 응원글 블로그 포스팅 테스트."""
 import asyncio
 import sys
 from pathlib import Path
@@ -19,26 +19,26 @@ from naver_blog_mcp.services.session_manager import SessionManager
 from naver_blog_mcp.automation.post_actions import create_blog_post
 
 
-async def test_us_market_post():
-    """미국 증시 동향 블로그 포스팅 테스트."""
+async def test_cheer_up_post():
+    """힘내라 응원글 블로그 포스팅."""
 
     print("=" * 80)
-    print("미국 증시 동향 블로그 포스팅 테스트")
+    print("힘내라 응원글 블로그 포스팅 테스트")
     print("=" * 80)
 
     # 환경 변수 확인
     config.validate()
 
-    # 미국 증시 동향 내용 (5줄)
+    # 힘내라 응원글 (5줄)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    title = "오늘 미국 증시 동향"
-    content = f"""오늘 미국 증시 동향 정리
+    title = "힘내세요, 당신은 해낼 수 있습니다"
+    content = f"""오늘 하루도 고생 많으셨습니다.
 
-1. S&P 500 지수는 전일 대비 0.5% 상승하며 강세를 보였습니다.
-2. 나스닥은 기술주 중심으로 1.2% 상승하며 랠리를 이어갔습니다.
-3. 다우존스 산업평균지수는 소폭 0.3% 상승으로 마감했습니다.
-4. 엔비디아와 애플 등 빅테크 종목들이 시장을 주도했습니다.
-5. 연준의 금리 동결 가능성이 높아지면서 투자 심리가 개선되었습니다.
+때로는 힘들고 지칠 때가 있지만, 그럴 때일수록 한 발짝만 더 내딛어 보세요.
+당신이 걸어온 길을 돌아보면, 이미 많은 어려움을 극복해왔다는 것을 알게 될 거예요.
+지금의 힘든 순간도 언젠가는 성장의 발판이 되어줄 것입니다.
+당신은 생각보다 훨씬 강하고, 충분히 해낼 수 있는 사람입니다.
+힘내세요, 응원합니다!
 
 ---
 작성 시각: {timestamp}
@@ -46,14 +46,17 @@ async def test_us_market_post():
 
     async with async_playwright() as p:
         # 브라우저 실행
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(
+            headless=False,
+            slow_mo=100
+        )
 
         # 세션 관리자
         session_manager = SessionManager(
             user_id=config.NAVER_BLOG_ID,
             password=config.NAVER_BLOG_PASSWORD
         )
-        context = await session_manager.get_or_create_session(browser)
+        context = await session_manager.get_or_create_session(browser, headless=False)
         page = await context.new_page()
 
         try:
@@ -79,11 +82,11 @@ async def test_us_market_post():
                 print(f"글 URL: {result['post_url']}")
 
             # 스크린샷 저장
-            await page.screenshot(path="playwright-state/us_market_post_success.png")
-            print("\n스크린샷 저장: playwright-state/us_market_post_success.png")
+            await page.screenshot(path="playwright-state/cheer_up_post_success.png")
+            print("\n스크린샷 저장: playwright-state/cheer_up_post_success.png")
 
             if result['success']:
-                print("\n[테스트 성공] 제목과 내용이 모두 정상적으로 게시되었는지 확인해주세요.")
+                print("\n[테스트 성공]")
                 return True
             else:
                 print("\n[테스트 실패]")
@@ -96,8 +99,8 @@ async def test_us_market_post():
 
             # 에러 스크린샷
             try:
-                await page.screenshot(path="playwright-state/us_market_post_error.png")
-                print("에러 스크린샷 저장: playwright-state/us_market_post_error.png")
+                await page.screenshot(path="playwright-state/cheer_up_post_error.png")
+                print("에러 스크린샷 저장: playwright-state/cheer_up_post_error.png")
             except:
                 pass
 
@@ -109,5 +112,5 @@ async def test_us_market_post():
 
 
 if __name__ == "__main__":
-    success = asyncio.run(test_us_market_post())
+    success = asyncio.run(test_cheer_up_post())
     sys.exit(0 if success else 1)

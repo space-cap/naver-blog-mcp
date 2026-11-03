@@ -33,8 +33,17 @@ from .mcp.tools import (
 )
 from .utils.trace_manager import trace_manager
 
-# 로깅 설정
-logging.basicConfig(level=logging.INFO)
+# 로깅 설정 (UTF-8 인코딩 명시)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stderr)
+    ]
+)
+# 참고: Claude Desktop이 로그를 파일로 리다이렉트할 때 UTF-8로 저장됩니다.
+# sys.stderr이 이미 UTF-8로 설정되어 있으므로 (7-13줄) 로그도 UTF-8로 출력됩니다.
+
 logger = logging.getLogger(__name__)
 
 
